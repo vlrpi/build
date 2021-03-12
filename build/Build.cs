@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Nuke.Common;
 using Nuke.Common.CI;
+using Nuke.Common.CI.TeamCity;
 using Nuke.Common.Execution;
 using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
@@ -11,6 +12,12 @@ using static Nuke.Common.EnvironmentInfo;
 using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.IO.PathConstruction;
 
+[TeamCity(
+    TeamCityAgentPlatform.Unix,
+    Version = "2020.2",
+    ManuallyTriggeredTargets = new[] {nameof(Push)},
+    NonEntryTargets = new[] {nameof(Compile)}
+)]
 class Build : NukeBuild
 {
     /// Support plugins are available for:
