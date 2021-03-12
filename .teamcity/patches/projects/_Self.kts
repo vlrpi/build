@@ -14,5 +14,8 @@ changeProject(DslContext.projectId) {
         add {
             text("env.DOCKER_HUB_USERNAME", "lantsovvova", readOnly = true, allowEmpty = false)
         }
+        add {
+            password("env.DOCKER_HUB_PASSWORD", "credentialsJSON:fccf4ddf-3779-4378-b9bb-66a8dc0b9fd7", display = ParameterDisplay.HIDDEN, readOnly = true)
+        }
     }
 }
