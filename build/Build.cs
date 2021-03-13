@@ -13,7 +13,7 @@ using static Nuke.Common.Tools.Docker.DockerTasks;
     TeamCityAgentPlatform.Unix,
     Version = "2020.2",
     ManuallyTriggeredTargets = new[] {/*nameof(Push), */nameof(PushJdk11)},
-    NonEntryTargets = new[] {/*nameof(Compile), */nameof(CompileJdk11)}
+    NonEntryTargets = new[] {/*nameof(Compile), */nameof(CompileJdk11), nameof(DockerLogIn), nameof(DockerLogOut)}
 )]
 class Build : NukeBuild
 {

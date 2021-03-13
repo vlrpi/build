@@ -23,11 +23,9 @@ import jetbrains.buildServer.configs.kotlin.v2018_1.vcs.*
 version = "2020.2"
 
 project {
-    buildType(DockerLogIn)
     buildType(PushJdk11)
-    buildType(DockerLogOut)
 
-    buildTypesOrder = arrayListOf(DockerLogIn, PushJdk11, DockerLogOut)
+    buildTypesOrder = arrayListOf(PushJdk11)
 
     params {
         select (
@@ -46,19 +44,6 @@ project {
             display = ParameterDisplay.NORMAL)
     }
 }
-object DockerLogIn : BuildType({
-    name = "DockerLogIn"
-    vcs {
-        root(DslContext.settingsRoot)
-        cleanCheckout = true
-    }
-    steps {
-        exec {
-            path = "build.sh"
-            arguments = "DockerLogIn --skip"
-        }
-    }
-})
 object PushJdk11 : BuildType({
     name = "PushJdk11"
     type = Type.DEPLOYMENT
@@ -69,25 +54,7 @@ object PushJdk11 : BuildType({
     steps {
         exec {
             path = "build.sh"
-            arguments = "CompileJdk11 PushJdk11 --skip"
-        }
-    }
-})
-object DockerLogOut : BuildType({
-    name = "DockerLogOut"
-    vcs {
-        root(DslContext.settingsRoot)
-        cleanCheckout = true
-    }
-    steps {
-        exec {
-            path = "build.sh"
-            arguments = "DockerLogOut --skip"
-        }
-    }
-    triggers {
-        finishBuildTrigger {
-            buildType = "${PushJdk11.id}"
+            arguments = "DockerLogIn CompileJdk11 PushJdk11 DockerLogOut --skip"
         }
     }
 })
