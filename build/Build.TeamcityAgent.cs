@@ -13,7 +13,7 @@ partial class Build
         .Executes(() =>
         {
             var dockerfiles = TeamcityAgentPath.GlobFiles("**/Dockerfile");
-            var tagsToBuild = GetTagsToBuild(dockerfiles, TeamcityAgentModuleName);
+            var tagsToBuild = GetTagsToBuild(dockerfiles, TeamcityAgentPath, TeamcityAgentModuleName);
             foreach (var (tags, dockerfile) in tagsToBuild)
             {
                 DockerBuild(_ => _
@@ -30,7 +30,7 @@ partial class Build
         .Executes(() =>
         {
             var dockerfiles = TeamcityAgentPath.GlobFiles("**/Dockerfile");
-            var tagsToBuild = GetTagsToBuild(dockerfiles, TeamcityAgentModuleName);
+            var tagsToBuild = GetTagsToBuild(dockerfiles, TeamcityAgentPath, TeamcityAgentModuleName);
             foreach (var (tags, _) in tagsToBuild)
             {
                 foreach (var tag in tags)

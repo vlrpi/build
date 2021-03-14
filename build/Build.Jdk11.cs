@@ -12,7 +12,7 @@ partial class Build
         .Executes(() =>
         {
             var dockerfiles = Jdk11Path.GlobFiles("**/Dockerfile");
-            var tagsToBuild = GetTagsToBuild(dockerfiles, Jdk11ModuleName);
+            var tagsToBuild = GetTagsToBuild(dockerfiles, Jdk11Path, Jdk11ModuleName);
             foreach (var (tags, dockerfile) in tagsToBuild)
             {
                 DockerBuild(_ => _
@@ -29,7 +29,7 @@ partial class Build
         .Executes(() =>
         {
             var dockerfiles = Jdk11Path.GlobFiles("**/Dockerfile");
-            var tagsToBuild = GetTagsToBuild(dockerfiles, Jdk11ModuleName);
+            var tagsToBuild = GetTagsToBuild(dockerfiles, Jdk11Path, Jdk11ModuleName);
             foreach (var (tags, _) in tagsToBuild)
             {
                 foreach (var tag in tags)

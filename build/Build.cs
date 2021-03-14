@@ -63,28 +63,30 @@ partial class Build : NukeBuild
             DockerLogout();
         });
 
-    static (string[] values, AbsolutePath dockerfile)[] GetTagsToBuild(IReadOnlyCollection<AbsolutePath> dockerfiles, string moduleName)
+    static (string[] values, AbsolutePath dockerfile)[] GetTagsToBuild(IReadOnlyCollection<AbsolutePath> dockerfiles, AbsolutePath baseDir, string moduleName)
     {
         var tagsToBuild = new (string[], AbsolutePath)[dockerfiles.Count];
         int i = 0;
         foreach (var dockerfile in dockerfiles)
         {
-            tagsToBuild[i++] = (GetTags(dockerfile, moduleName), dockerfile);
+            tagsToBuild[i++] = (GetTags(dockerfile, baseDir, moduleName), dockerfile);
         }
 
         return tagsToBuild;
     }
 
-    static string GetTagName(string pathToDockerfile, string moduleName)
+    static string GetTagName(string pathToDockerfile, AbsolutePath baseDir, string moduleName)
     {
         var sb = new StringBuilder();
         sb.Append($"vlrpi/{moduleName}:");
         string[] separatedPath = pathToDockerfile.Split(Path.DirectorySeparatorChar);
-        sb.AppendJoin('-', separatedPath.SkipWhile(it => it != moduleName).Skip(1).TakeWhile(it => it != "Dockerfile"));
+        var parts = separatedPath.SkipWhile(it => it != moduleName).Skip(1).TakeWhile(it => it != "Dockerfile");
+        var partsAfterExclude = ExcludeFromTag(parts, baseDir);
+        sb.AppendJoin('-', partsAfterExclude);
         return sb.ToString();
     }
 
-    static string[] GetTags(AbsolutePath pathToDockerfile, string moduleName)
+    static string[] GetTags(AbsolutePath pathToDockerfile, AbsolutePath baseDir, string moduleName)
     {
         AbsolutePath pathToTagsConfigFile = pathToDockerfile.Parent / ".tags";
         
@@ -99,13 +101,25 @@ partial class Build : NukeBuild
                 var sb = new StringBuilder();
                 sb.Append($"vlrpi/{moduleName}:");
                 string[] separatedPath = pathToDockerfile.Parent.Parent.ToString().Split(Path.DirectorySeparatorChar);
-                sb.AppendJoin('-', separatedPath.SkipWhile(it => it != moduleName).Skip(1).Append(item));
+                var parts = separatedPath.SkipWhile(it => it != moduleName).Skip(1).Append(item);
+                var partsAfterExclude = ExcludeFromTag(parts, baseDir);
+                sb.AppendJoin('-', partsAfterExclude);
                 tags[i++] = sb.ToString();
             }
 
             return tags;
         }
 
-        return new[] {GetTagName(pathToDockerfile, moduleName)};
+        return new[] {GetTagName(pathToDockerfile, baseDir, moduleName)};
+    }
+
+    static IEnumerable<string> ExcludeFromTag(IEnumerable<string> parts, AbsolutePath baseDir)
+    {
+        foreach (var part in parts)
+        {
+            baseDir /= part;
+            if (!FileExists(baseDir / ".exclude"))
+                yield return part;
+        }
     }
 }
