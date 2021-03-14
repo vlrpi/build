@@ -14,12 +14,12 @@ partial class Build
         {
             var dockerfiles = TeamcityAgentPath.GlobFiles("**/Dockerfile");
             var tagsToBuild = GetTagsToBuild(dockerfiles, TeamcityAgentModuleName);
-            foreach (var (tagToBuild, dockerfile) in tagsToBuild)
+            foreach (var (tags, dockerfile) in tagsToBuild)
             {
                 DockerBuild(_ => _
                     .SetPlatform("arm64")
                     .EnablePull()
-                    .SetTag(tagToBuild)
+                    .SetTag(tags)
                     .SetPath(dockerfile.Parent));
             }
         });
@@ -31,9 +31,12 @@ partial class Build
         {
             var dockerfiles = TeamcityAgentPath.GlobFiles("**/Dockerfile");
             var tagsToBuild = GetTagsToBuild(dockerfiles, TeamcityAgentModuleName);
-            foreach (var (tagToBuild, _) in tagsToBuild)
+            foreach (var (tags, _) in tagsToBuild)
             {
-                Docker($"push {tagToBuild}");
+                foreach (var tag in tags)
+                {
+                    Docker($"push {tag}");
+                }
             }
         });
 }

@@ -7,6 +7,7 @@ using Nuke.Common;
 using Nuke.Common.CI.TeamCity;
 using Nuke.Common.IO;
 using Nuke.Common.Tools.Docker;
+using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.Tools.Docker.DockerTasks;
 
 [TeamCity(
@@ -62,13 +63,13 @@ partial class Build : NukeBuild
             DockerLogout();
         });
 
-    static (string tagToBuild, AbsolutePath dockerfile)[] GetTagsToBuild(IReadOnlyCollection<AbsolutePath> dockerfiles, string moduleName)
+    static (string[] values, AbsolutePath dockerfile)[] GetTagsToBuild(IReadOnlyCollection<AbsolutePath> dockerfiles, string moduleName)
     {
-        var tagsToBuild = new (string, AbsolutePath)[dockerfiles.Count];
+        var tagsToBuild = new (string[], AbsolutePath)[dockerfiles.Count];
         int i = 0;
         foreach (var dockerfile in dockerfiles)
         {
-            tagsToBuild[i++] = (GetTagName(dockerfile, moduleName), dockerfile);
+            tagsToBuild[i++] = (GetTags(dockerfile, moduleName), dockerfile);
         }
 
         return tagsToBuild;
@@ -81,5 +82,30 @@ partial class Build : NukeBuild
         string[] separatedPath = pathToDockerfile.Split(Path.DirectorySeparatorChar);
         sb.AppendJoin('-', separatedPath.SkipWhile(it => it != moduleName).Skip(1).TakeWhile(it => it != "Dockerfile"));
         return sb.ToString();
+    }
+
+    static string[] GetTags(AbsolutePath pathToDockerfile, string moduleName)
+    {
+        AbsolutePath pathToTagsConfigFile = pathToDockerfile.Parent / ".tags";
+        
+        if (FileExists(pathToTagsConfigFile))
+        {
+            string[] items = File.ReadAllLines(pathToTagsConfigFile);
+            var tags = new string[items.Length];
+
+            int i = 0;
+            foreach (string item in items)
+            {
+                var sb = new StringBuilder();
+                sb.Append($"vlrpi/{moduleName}:");
+                string[] separatedPath = pathToDockerfile.Parent.Parent.ToString().Split(Path.DirectorySeparatorChar);
+                sb.AppendJoin('-', separatedPath.SkipWhile(it => it != moduleName).Skip(1).Append(item));
+                tags[i++] = sb.ToString();
+            }
+
+            return tags;
+        }
+
+        return new[] {GetTagName(pathToDockerfile, moduleName)};
     }
 }
