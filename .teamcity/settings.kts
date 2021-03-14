@@ -24,8 +24,11 @@ version = "2020.2"
 
 project {
     buildType(PushJdk11)
+    buildType(PushTeamcityAgent)
+    buildType(PushTeamcityServer)
+    buildType(PushTeamcityAgentDotnet)
 
-    buildTypesOrder = arrayListOf(PushJdk11)
+    buildTypesOrder = arrayListOf(PushJdk11, PushTeamcityAgent, PushTeamcityServer, PushTeamcityAgentDotnet)
 
     params {
         select (
@@ -55,6 +58,48 @@ object PushJdk11 : BuildType({
         exec {
             path = "build.sh"
             arguments = "DockerLogIn CompileJdk11 PushJdk11 DockerLogOut --skip"
+        }
+    }
+})
+object PushTeamcityAgent : BuildType({
+    name = "PushTeamcityAgent"
+    type = Type.DEPLOYMENT
+    vcs {
+        root(DslContext.settingsRoot)
+        cleanCheckout = true
+    }
+    steps {
+        exec {
+            path = "build.sh"
+            arguments = "DockerLogIn CompileTeamcityAgent PushTeamcityAgent DockerLogOut --skip"
+        }
+    }
+})
+object PushTeamcityServer : BuildType({
+    name = "PushTeamcityServer"
+    type = Type.DEPLOYMENT
+    vcs {
+        root(DslContext.settingsRoot)
+        cleanCheckout = true
+    }
+    steps {
+        exec {
+            path = "build.sh"
+            arguments = "DockerLogIn CompileTeamcityServer PushTeamcityServer DockerLogOut --skip"
+        }
+    }
+})
+object PushTeamcityAgentDotnet : BuildType({
+    name = "PushTeamcityAgentDotnet"
+    type = Type.DEPLOYMENT
+    vcs {
+        root(DslContext.settingsRoot)
+        cleanCheckout = true
+    }
+    steps {
+        exec {
+            path = "build.sh"
+            arguments = "DockerLogIn CompileTeamcityAgentDotnet PushTeamcityAgentDotnet DockerLogOut --skip"
         }
     }
 })
