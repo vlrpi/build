@@ -15,11 +15,12 @@ partial class Build
             var tagsToBuild = GetTagsToBuild(dockerfiles, TeamcityServerPath, TeamcityServerModuleName);
             foreach (var (tags, dockerfile) in tagsToBuild)
             {
-                DockerBuild(_ => _
-                    .SetPlatform("arm64")
-                    .EnablePull()
+                DockerBuildxBuild(_ => _
+                    .SetPlatform("linux/arm64")
                     .SetTag(tags)
-                    .SetPath(dockerfile.Parent));
+                    .EnableRm()
+                    .SetPath(dockerfile.Parent)
+                    .EnablePull());
             }
         });
 
