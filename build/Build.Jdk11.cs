@@ -14,11 +14,11 @@ partial class Build
             var tagsToBuild = GetTagsToBuild(dockerfiles, Jdk11Path, Jdk11ModuleName);
             foreach (var (tags, dockerfile) in tagsToBuild)
             {
-                DockerBuild(_ => _
-                    .SetPlatform("arm64")
-                    .EnablePull()
+                DockerBuildxBuild(_ => _
+                    .SetPlatform("linux/arm64")
                     .SetTag(tags)
-                    .SetPath(dockerfile.Parent));
+                    .SetPath(dockerfile.Parent)
+                    .EnablePull());
             }
         });
 
