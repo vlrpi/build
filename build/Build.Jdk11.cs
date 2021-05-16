@@ -17,6 +17,7 @@ partial class Build
                 DockerBuildxBuild(_ => _
                     .SetPlatform("linux/arm64")
                     .SetTag(tags)
+                    .EnableRm()
                     .SetPath(dockerfile.Parent)
                     .EnablePull());
             }
