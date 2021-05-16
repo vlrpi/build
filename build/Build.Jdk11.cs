@@ -8,7 +8,6 @@ partial class Build
     const string Jdk11ModuleName = "rpi-jdk11";
     AbsolutePath Jdk11Path => RootDirectory / Jdk11ModuleName;
     Target CompileJdk11 => _ => _
-        .DependsOn(DockerLogIn)
         .Executes(() =>
         {
             var dockerfiles = Jdk11Path.GlobFiles("**/Dockerfile");
@@ -25,7 +24,6 @@ partial class Build
 
     Target PushJdk11 => _ => _
         .DependsOn(CompileJdk11)
-        .Triggers(DockerLogOut)
         .Executes(() =>
         {
             var dockerfiles = Jdk11Path.GlobFiles("**/Dockerfile");

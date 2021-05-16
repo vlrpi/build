@@ -9,7 +9,6 @@ partial class Build
     AbsolutePath TeamcityAgentPath => RootDirectory / TeamcityAgentModuleName;
 
     Target CompileTeamcityAgent => _ => _
-        .DependsOn(DockerLogIn)
         .Executes(() =>
         {
             var dockerfiles = TeamcityAgentPath.GlobFiles("**/Dockerfile");
@@ -26,7 +25,6 @@ partial class Build
 
     Target PushTeamcityAgent => _ => _
         .DependsOn(CompileTeamcityAgent)
-        .Triggers(DockerLogOut)
         .Executes(() =>
         {
             var dockerfiles = TeamcityAgentPath.GlobFiles("**/Dockerfile");

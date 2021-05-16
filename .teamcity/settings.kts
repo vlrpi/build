@@ -27,8 +27,10 @@ project {
     buildType(PushTeamcityAgent)
     buildType(PushTeamcityServer)
     buildType(PushTeamcityAgentDotnet)
+    buildType(DockerLogIn)
+    buildType(DockerLogOut)
 
-    buildTypesOrder = arrayListOf(PushJdk11, PushTeamcityAgent, PushTeamcityServer, PushTeamcityAgentDotnet)
+    buildTypesOrder = arrayListOf(PushJdk11, PushTeamcityAgent, PushTeamcityServer, PushTeamcityAgentDotnet, DockerLogIn, DockerLogOut)
 
     params {
         select (
@@ -62,12 +64,12 @@ object PushJdk11 : BuildType({
     steps {
         exec {
             path = "build.cmd"
-            arguments = "DockerLogIn CompileJdk11 PushJdk11 DockerLogOut --skip"
+            arguments = "CompileJdk11 PushJdk11 --skip"
             conditions { contains("teamcity.agent.jvm.os.name", "Windows") }
         }
         exec {
             path = "build.sh"
-            arguments = "DockerLogIn CompileJdk11 PushJdk11 DockerLogOut --skip"
+            arguments = "CompileJdk11 PushJdk11 --skip"
             conditions { doesNotContain("teamcity.agent.jvm.os.name", "Windows") }
         }
     }
@@ -89,12 +91,12 @@ object PushTeamcityAgent : BuildType({
     steps {
         exec {
             path = "build.cmd"
-            arguments = "DockerLogIn CompileTeamcityAgent PushTeamcityAgent DockerLogOut --skip"
+            arguments = "CompileTeamcityAgent PushTeamcityAgent --skip"
             conditions { contains("teamcity.agent.jvm.os.name", "Windows") }
         }
         exec {
             path = "build.sh"
-            arguments = "DockerLogIn CompileTeamcityAgent PushTeamcityAgent DockerLogOut --skip"
+            arguments = "CompileTeamcityAgent PushTeamcityAgent --skip"
             conditions { doesNotContain("teamcity.agent.jvm.os.name", "Windows") }
         }
     }
@@ -116,12 +118,12 @@ object PushTeamcityServer : BuildType({
     steps {
         exec {
             path = "build.cmd"
-            arguments = "DockerLogIn CompileTeamcityServer PushTeamcityServer DockerLogOut --skip"
+            arguments = "CompileTeamcityServer PushTeamcityServer --skip"
             conditions { contains("teamcity.agent.jvm.os.name", "Windows") }
         }
         exec {
             path = "build.sh"
-            arguments = "DockerLogIn CompileTeamcityServer PushTeamcityServer DockerLogOut --skip"
+            arguments = "CompileTeamcityServer PushTeamcityServer --skip"
             conditions { doesNotContain("teamcity.agent.jvm.os.name", "Windows") }
         }
     }
@@ -143,12 +145,12 @@ object PushTeamcityAgentDotnet : BuildType({
     steps {
         exec {
             path = "build.cmd"
-            arguments = "DockerLogIn CompileTeamcityAgentDotnet PushTeamcityAgentDotnet DockerLogOut --skip"
+            arguments = "CompileTeamcityAgentDotnet PushTeamcityAgentDotnet --skip"
             conditions { contains("teamcity.agent.jvm.os.name", "Windows") }
         }
         exec {
             path = "build.sh"
-            arguments = "DockerLogIn CompileTeamcityAgentDotnet PushTeamcityAgentDotnet DockerLogOut --skip"
+            arguments = "CompileTeamcityAgentDotnet PushTeamcityAgentDotnet --skip"
             conditions { doesNotContain("teamcity.agent.jvm.os.name", "Windows") }
         }
     }
@@ -156,6 +158,60 @@ object PushTeamcityAgentDotnet : BuildType({
         text(
             "teamcity.ui.runButton.caption",
             "Push Teamcity Agent Dotnet",
+            display = ParameterDisplay.HIDDEN
+        )
+    }
+})
+object DockerLogIn : BuildType({
+    name = "DockerLogIn"
+    type = Type.DEPLOYMENT
+    vcs {
+        root(DslContext.settingsRoot)
+        cleanCheckout = true
+    }
+    steps {
+        exec {
+            path = "build.cmd"
+            arguments = "DockerLogIn --skip"
+            conditions { contains("teamcity.agent.jvm.os.name", "Windows") }
+        }
+        exec {
+            path = "build.sh"
+            arguments = "DockerLogIn --skip"
+            conditions { doesNotContain("teamcity.agent.jvm.os.name", "Windows") }
+        }
+    }
+    params {
+        text(
+            "teamcity.ui.runButton.caption",
+            "Docker Log In",
+            display = ParameterDisplay.HIDDEN
+        )
+    }
+})
+object DockerLogOut : BuildType({
+    name = "DockerLogOut"
+    type = Type.DEPLOYMENT
+    vcs {
+        root(DslContext.settingsRoot)
+        cleanCheckout = true
+    }
+    steps {
+        exec {
+            path = "build.cmd"
+            arguments = "DockerLogOut --skip"
+            conditions { contains("teamcity.agent.jvm.os.name", "Windows") }
+        }
+        exec {
+            path = "build.sh"
+            arguments = "DockerLogOut --skip"
+            conditions { doesNotContain("teamcity.agent.jvm.os.name", "Windows") }
+        }
+    }
+    params {
+        text(
+            "teamcity.ui.runButton.caption",
+            "Docker Log Out",
             display = ParameterDisplay.HIDDEN
         )
     }

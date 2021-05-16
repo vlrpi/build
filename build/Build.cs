@@ -17,16 +17,16 @@ using static Nuke.Common.Tools.Docker.DockerTasks;
         nameof(PushJdk11),
         nameof(PushTeamcityAgent),
         nameof(PushTeamcityServer),
-        nameof(PushTeamcityAgentDotnet)
+        nameof(PushTeamcityAgentDotnet),
+        nameof(DockerLogIn),
+        nameof(DockerLogOut)
     },
     NonEntryTargets = new[]
     {
         nameof(CompileJdk11),
         nameof(CompileTeamcityServer),
         nameof(CompileTeamcityAgent),
-        nameof(CompileTeamcityAgentDotnet),
-        nameof(DockerLogIn),
-        nameof(DockerLogOut)
+        nameof(CompileTeamcityAgentDotnet)
     }
 )]
 partial class Build : NukeBuild
