@@ -15,7 +15,7 @@ partial class Build
             foreach (var (tags, dockerfile) in tagsToBuild)
             {
                 DockerBuildxBuild(_ => _
-                    .SetPlatform("linux/arm64")
+                    .SetPlatform("linux/arm64,linux/arm/v7,linux/arm/v6")
                     .SetTag(tags)
                     .EnableRm()
                     .SetPath(dockerfile.Parent)
