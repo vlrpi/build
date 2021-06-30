@@ -8,7 +8,7 @@ partial class Build
     const string TeamcityAgentModuleName = "rpi-teamcity-agent";
     AbsolutePath TeamcityAgentPath => RootDirectory / TeamcityAgentModuleName;
 
-    Target CompileTeamcityAgent => _ => _
+    Target CompileAndPushTeamcityAgent => _ => _
         .Executes(() =>
         {
             var dockerfiles = TeamcityAgentPath.GlobFiles("**/Dockerfile");
@@ -20,22 +20,23 @@ partial class Build
                     .SetTag(tags)
                     .EnableRm()
                     .SetPath(dockerfile.Parent)
-                    .EnablePull());
+                    .EnablePull()
+                    .EnablePush());
             }
         });
 
-    Target PushTeamcityAgent => _ => _
-        .DependsOn(CompileTeamcityAgent)
-        .Executes(() =>
-        {
-            var dockerfiles = TeamcityAgentPath.GlobFiles("**/Dockerfile");
-            var tagsToBuild = GetTagsToBuild(dockerfiles, TeamcityAgentPath, TeamcityAgentModuleName);
-            foreach (var (tags, _) in tagsToBuild)
-            {
-                foreach (var tag in tags)
-                {
-                    Docker($"push {tag}");
-                }
-            }
-        });
+    // Target PushTeamcityAgent => _ => _
+    //     .DependsOn(CompileTeamcityAgent)
+    //     .Executes(() =>
+    //     {
+    //         var dockerfiles = TeamcityAgentPath.GlobFiles("**/Dockerfile");
+    //         var tagsToBuild = GetTagsToBuild(dockerfiles, TeamcityAgentPath, TeamcityAgentModuleName);
+    //         foreach (var (tags, _) in tagsToBuild)
+    //         {
+    //             foreach (var tag in tags)
+    //             {
+    //                 Docker($"push {tag}");
+    //             }
+    //         }
+    //     });
 }

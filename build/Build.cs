@@ -11,22 +11,15 @@ using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.Tools.Docker.DockerTasks;
 
 [TeamCity(
-    Version = "2020.2",
+    Version = "2021.1",
     ManuallyTriggeredTargets = new[]
     {
-        nameof(PushJdk11),
-        nameof(PushTeamcityAgent),
-        nameof(PushTeamcityServer),
-        nameof(PushTeamcityAgentDotnet),
+        nameof(CompileAndPushJdk11),
+        nameof(CompileAndPushTeamcityServer),
+        nameof(CompileAndPushTeamcityAgent),
+        nameof(CompileAndPushTeamcityAgentDotnet),
         nameof(DockerLogIn),
         nameof(DockerLogOut)
-    },
-    NonEntryTargets = new[]
-    {
-        nameof(CompileJdk11),
-        nameof(CompileTeamcityServer),
-        nameof(CompileTeamcityAgent),
-        nameof(CompileTeamcityAgentDotnet)
     }
 )]
 partial class Build : NukeBuild
@@ -39,10 +32,7 @@ partial class Build : NukeBuild
 
     public static int Main() =>
         Execute<Build>(
-            x => x.PushJdk11,
-            x => x.PushTeamcityAgent,
-            x => x.PushTeamcityServer,
-            x => x.PushTeamcityAgentDotnet);
+            x => x.CompileAndPushJdk11);
 
     [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
     readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;

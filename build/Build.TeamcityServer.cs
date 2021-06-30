@@ -8,7 +8,7 @@ partial class Build
     const string TeamcityServerModuleName = "rpi-teamcity-server";
     AbsolutePath TeamcityServerPath => RootDirectory / TeamcityServerModuleName;
 
-    Target CompileTeamcityServer => _ => _
+    Target CompileAndPushTeamcityServer => _ => _
         .Executes(() =>
         {
             var dockerfiles = TeamcityServerPath.GlobFiles("**/Dockerfile");
@@ -24,18 +24,18 @@ partial class Build
             }
         });
 
-    Target PushTeamcityServer => _ => _
-        .DependsOn(CompileTeamcityServer)
-        .Executes(() =>
-        {
-            var dockerfiles = TeamcityServerPath.GlobFiles("**/Dockerfile");
-            var tagsToBuild = GetTagsToBuild(dockerfiles, TeamcityServerPath, TeamcityServerModuleName);
-            foreach (var (tags, _) in tagsToBuild)
-            {
-                foreach (var tag in tags)
-                {
-                    Docker($"push {tag}");
-                }
-            }
-        });
+    // Target PushTeamcityServer => _ => _
+    //     .DependsOn(CompileAndPushTeamcityServer)
+    //     .Executes(() =>
+    //     {
+    //         var dockerfiles = TeamcityServerPath.GlobFiles("**/Dockerfile");
+    //         var tagsToBuild = GetTagsToBuild(dockerfiles, TeamcityServerPath, TeamcityServerModuleName);
+    //         foreach (var (tags, _) in tagsToBuild)
+    //         {
+    //             foreach (var tag in tags)
+    //             {
+    //                 Docker($"push {tag}");
+    //             }
+    //         }
+    //     });
 }
