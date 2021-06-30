@@ -20,7 +20,9 @@ partial class Build
                     .SetTag(tags)
                     .EnableRm()
                     .SetPath(dockerfile.Parent)
-                    .EnablePull());
+                    .SetBuilder("rpi")
+                    .EnablePull()
+                    .EnablePush());
             }
         });
 
