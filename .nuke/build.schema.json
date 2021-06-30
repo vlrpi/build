@@ -75,6 +75,7 @@
               "CompileAndPushTeamcityAgent",
               "CompileAndPushTeamcityAgentDotnet",
               "CompileAndPushTeamcityServer",
+              "CreateBuilder",
               "DockerLogIn",
               "DockerLogOut"
             ]
@@ -90,6 +91,7 @@
               "CompileAndPushTeamcityAgent",
               "CompileAndPushTeamcityAgentDotnet",
               "CompileAndPushTeamcityServer",
+              "CreateBuilder",
               "DockerLogIn",
               "DockerLogOut"
             ]

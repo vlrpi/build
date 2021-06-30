@@ -29,8 +29,9 @@ project {
     buildType(CompileAndPushTeamcityAgentDotnet)
     buildType(DockerLogIn)
     buildType(DockerLogOut)
+    buildType(CreateBuilder)
 
-    buildTypesOrder = arrayListOf(CompileAndPushJdk11, CompileAndPushTeamcityServer, CompileAndPushTeamcityAgent, CompileAndPushTeamcityAgentDotnet, DockerLogIn, DockerLogOut)
+    buildTypesOrder = arrayListOf(CompileAndPushJdk11, CompileAndPushTeamcityServer, CompileAndPushTeamcityAgent, CompileAndPushTeamcityAgentDotnet, DockerLogIn, DockerLogOut, CreateBuilder)
 
     params {
         select (
@@ -210,6 +211,32 @@ object DockerLogOut : BuildType({
         text(
             "teamcity.ui.runButton.caption",
             "Docker Log Out",
+            display = ParameterDisplay.HIDDEN)
+    }
+})
+object CreateBuilder : BuildType({
+    name = "CreateBuilder"
+    type = Type.DEPLOYMENT
+    vcs {
+        root(DslContext.settingsRoot)
+        cleanCheckout = true
+    }
+    steps {
+        exec {
+            path = "build.cmd"
+            arguments = "CreateBuilder --skip"
+            conditions { contains("teamcity.agent.jvm.os.name", "Windows") }
+        }
+        exec {
+            path = "build.sh"
+            arguments = "CreateBuilder --skip"
+            conditions { doesNotContain("teamcity.agent.jvm.os.name", "Windows") }
+        }
+    }
+    params {
+        text(
+            "teamcity.ui.runButton.caption",
+            "Create Builder",
             display = ParameterDisplay.HIDDEN)
     }
 })

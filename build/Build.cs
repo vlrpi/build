@@ -19,7 +19,8 @@ using static Nuke.Common.Tools.Docker.DockerTasks;
         nameof(CompileAndPushTeamcityAgent),
         nameof(CompileAndPushTeamcityAgentDotnet),
         nameof(DockerLogIn),
-        nameof(DockerLogOut)
+        nameof(DockerLogOut),
+        nameof(CreateBuilder)
     }
 )]
 partial class Build : NukeBuild
@@ -50,6 +51,12 @@ partial class Build : NukeBuild
         .Executes(() =>
         {
             DockerLogout();
+        });
+
+    Target CreateBuilder => _ => _
+        .Executes(() =>
+        {
+            Docker("buildx create --name rpi --node rpi-node --platform linux/arm64,linux/arm/v6,linux/arm/v7 --driver docker-container");
         });
 
     static (string[] values, AbsolutePath dockerfile)[] GetTagsToBuild(IReadOnlyCollection<AbsolutePath> dockerfiles, AbsolutePath baseDir, string moduleName)
