@@ -20,17 +20,18 @@ import jetbrains.buildServer.configs.kotlin.v2018_1.buildSteps.*
 import jetbrains.buildServer.configs.kotlin.v2018_1.triggers.*
 import jetbrains.buildServer.configs.kotlin.v2018_1.vcs.*
 
-version = "2020.2"
+version = "2021.1"
 
 project {
-    buildType(PushJdk11)
-    buildType(PushTeamcityAgent)
-    buildType(PushTeamcityServer)
-    buildType(PushTeamcityAgentDotnet)
+    buildType(CompileAndPushJdk11)
+    buildType(CompileAndPushTeamcityServer)
+    buildType(CompileAndPushTeamcityAgent)
+    buildType(CompileAndPushTeamcityAgentDotnet)
     buildType(DockerLogIn)
     buildType(DockerLogOut)
+    buildType(CreateBuilder)
 
-    buildTypesOrder = arrayListOf(PushJdk11, PushTeamcityAgent, PushTeamcityServer, PushTeamcityAgentDotnet, DockerLogIn, DockerLogOut)
+    buildTypesOrder = arrayListOf(CompileAndPushJdk11, CompileAndPushTeamcityServer, CompileAndPushTeamcityAgent, CompileAndPushTeamcityAgentDotnet, DockerLogIn, DockerLogOut, CreateBuilder)
 
     params {
         select (
@@ -50,12 +51,15 @@ project {
         text(
             "teamcity.runner.commandline.stdstreams.encoding",
             "UTF-8",
-            display = ParameterDisplay.HIDDEN
-        )
+            display = ParameterDisplay.HIDDEN)
+        text(
+            "teamcity.git.fetchAllHeads",
+            "true",
+            display = ParameterDisplay.HIDDEN)
     }
 }
-object PushJdk11 : BuildType({
-    name = "PushJdk11"
+object CompileAndPushJdk11 : BuildType({
+    name = "CompileAndPushJdk11"
     type = Type.DEPLOYMENT
     vcs {
         root(DslContext.settingsRoot)
@@ -64,25 +68,24 @@ object PushJdk11 : BuildType({
     steps {
         exec {
             path = "build.cmd"
-            arguments = "CompileJdk11 PushJdk11 --skip"
+            arguments = "CompileAndPushJdk11 --skip"
             conditions { contains("teamcity.agent.jvm.os.name", "Windows") }
         }
         exec {
             path = "build.sh"
-            arguments = "CompileJdk11 PushJdk11 --skip"
+            arguments = "CompileAndPushJdk11 --skip"
             conditions { doesNotContain("teamcity.agent.jvm.os.name", "Windows") }
         }
     }
     params {
         text(
             "teamcity.ui.runButton.caption",
-            "Push Jdk11",
-            display = ParameterDisplay.HIDDEN
-        )
+            "Compile And Push Jdk11",
+            display = ParameterDisplay.HIDDEN)
     }
 })
-object PushTeamcityAgent : BuildType({
-    name = "PushTeamcityAgent"
+object CompileAndPushTeamcityServer : BuildType({
+    name = "CompileAndPushTeamcityServer"
     type = Type.DEPLOYMENT
     vcs {
         root(DslContext.settingsRoot)
@@ -91,25 +94,24 @@ object PushTeamcityAgent : BuildType({
     steps {
         exec {
             path = "build.cmd"
-            arguments = "CompileTeamcityAgent PushTeamcityAgent --skip"
+            arguments = "CompileAndPushTeamcityServer --skip"
             conditions { contains("teamcity.agent.jvm.os.name", "Windows") }
         }
         exec {
             path = "build.sh"
-            arguments = "CompileTeamcityAgent PushTeamcityAgent --skip"
+            arguments = "CompileAndPushTeamcityServer --skip"
             conditions { doesNotContain("teamcity.agent.jvm.os.name", "Windows") }
         }
     }
     params {
         text(
             "teamcity.ui.runButton.caption",
-            "Push Teamcity Agent",
-            display = ParameterDisplay.HIDDEN
-        )
+            "Compile And Push Teamcity Server",
+            display = ParameterDisplay.HIDDEN)
     }
 })
-object PushTeamcityServer : BuildType({
-    name = "PushTeamcityServer"
+object CompileAndPushTeamcityAgent : BuildType({
+    name = "CompileAndPushTeamcityAgent"
     type = Type.DEPLOYMENT
     vcs {
         root(DslContext.settingsRoot)
@@ -118,25 +120,24 @@ object PushTeamcityServer : BuildType({
     steps {
         exec {
             path = "build.cmd"
-            arguments = "CompileTeamcityServer PushTeamcityServer --skip"
+            arguments = "CompileAndPushTeamcityAgent --skip"
             conditions { contains("teamcity.agent.jvm.os.name", "Windows") }
         }
         exec {
             path = "build.sh"
-            arguments = "CompileTeamcityServer PushTeamcityServer --skip"
+            arguments = "CompileAndPushTeamcityAgent --skip"
             conditions { doesNotContain("teamcity.agent.jvm.os.name", "Windows") }
         }
     }
     params {
         text(
             "teamcity.ui.runButton.caption",
-            "Push Teamcity Server",
-            display = ParameterDisplay.HIDDEN
-        )
+            "Compile And Push Teamcity Agent",
+            display = ParameterDisplay.HIDDEN)
     }
 })
-object PushTeamcityAgentDotnet : BuildType({
-    name = "PushTeamcityAgentDotnet"
+object CompileAndPushTeamcityAgentDotnet : BuildType({
+    name = "CompileAndPushTeamcityAgentDotnet"
     type = Type.DEPLOYMENT
     vcs {
         root(DslContext.settingsRoot)
@@ -145,21 +146,20 @@ object PushTeamcityAgentDotnet : BuildType({
     steps {
         exec {
             path = "build.cmd"
-            arguments = "CompileTeamcityAgentDotnet PushTeamcityAgentDotnet --skip"
+            arguments = "CompileAndPushTeamcityAgentDotnet --skip"
             conditions { contains("teamcity.agent.jvm.os.name", "Windows") }
         }
         exec {
             path = "build.sh"
-            arguments = "CompileTeamcityAgentDotnet PushTeamcityAgentDotnet --skip"
+            arguments = "CompileAndPushTeamcityAgentDotnet --skip"
             conditions { doesNotContain("teamcity.agent.jvm.os.name", "Windows") }
         }
     }
     params {
         text(
             "teamcity.ui.runButton.caption",
-            "Push Teamcity Agent Dotnet",
-            display = ParameterDisplay.HIDDEN
-        )
+            "Compile And Push Teamcity Agent Dotnet",
+            display = ParameterDisplay.HIDDEN)
     }
 })
 object DockerLogIn : BuildType({
@@ -185,8 +185,7 @@ object DockerLogIn : BuildType({
         text(
             "teamcity.ui.runButton.caption",
             "Docker Log In",
-            display = ParameterDisplay.HIDDEN
-        )
+            display = ParameterDisplay.HIDDEN)
     }
 })
 object DockerLogOut : BuildType({
@@ -212,7 +211,32 @@ object DockerLogOut : BuildType({
         text(
             "teamcity.ui.runButton.caption",
             "Docker Log Out",
-            display = ParameterDisplay.HIDDEN
-        )
+            display = ParameterDisplay.HIDDEN)
+    }
+})
+object CreateBuilder : BuildType({
+    name = "CreateBuilder"
+    type = Type.DEPLOYMENT
+    vcs {
+        root(DslContext.settingsRoot)
+        cleanCheckout = true
+    }
+    steps {
+        exec {
+            path = "build.cmd"
+            arguments = "CreateBuilder --skip"
+            conditions { contains("teamcity.agent.jvm.os.name", "Windows") }
+        }
+        exec {
+            path = "build.sh"
+            arguments = "CreateBuilder --skip"
+            conditions { doesNotContain("teamcity.agent.jvm.os.name", "Windows") }
+        }
+    }
+    params {
+        text(
+            "teamcity.ui.runButton.caption",
+            "Create Builder",
+            display = ParameterDisplay.HIDDEN)
     }
 })

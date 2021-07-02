@@ -7,7 +7,7 @@ partial class Build
 {
     const string Jdk11ModuleName = "rpi-jdk11";
     AbsolutePath Jdk11Path => RootDirectory / Jdk11ModuleName;
-    Target CompileJdk11 => _ => _
+    Target CompileAndPushJdk11 => _ => _
         .Executes(() =>
         {
             var dockerfiles = Jdk11Path.GlobFiles("**/Dockerfile");
@@ -15,26 +15,28 @@ partial class Build
             foreach (var (tags, dockerfile) in tagsToBuild)
             {
                 DockerBuildxBuild(_ => _
-                    .SetPlatform("linux/arm64")
+                    .SetPlatform("linux/arm64,linux/arm/v7,linux/arm/v6")
                     .SetTag(tags)
                     .EnableRm()
                     .SetPath(dockerfile.Parent)
-                    .EnablePull());
+                    .SetBuilder("rpi")
+                    .EnablePull()
+                    .EnablePush());
             }
         });
 
-    Target PushJdk11 => _ => _
-        .DependsOn(CompileJdk11)
-        .Executes(() =>
-        {
-            var dockerfiles = Jdk11Path.GlobFiles("**/Dockerfile");
-            var tagsToBuild = GetTagsToBuild(dockerfiles, Jdk11Path, Jdk11ModuleName);
-            foreach (var (tags, _) in tagsToBuild)
-            {
-                foreach (var tag in tags)
-                {
-                    Docker($"push {tag}");
-                }
-            }
-        });
+    // Target PushJdk11 => _ => _
+    //     .DependsOn(CompileAndPushJdk11)
+    //     .Executes(() =>
+    //     {
+    //         var dockerfiles = Jdk11Path.GlobFiles("**/Dockerfile");
+    //         var tagsToBuild = GetTagsToBuild(dockerfiles, Jdk11Path, Jdk11ModuleName);
+    //         foreach (var (tags, _) in tagsToBuild)
+    //         {
+    //             foreach (var tag in tags)
+    //             {
+    //                 Docker($"push {tag}");
+    //             }
+    //         }
+    //     });
 }
