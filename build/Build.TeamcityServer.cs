@@ -19,7 +19,8 @@ partial class Build
                     .SetPlatform("linux/arm64,linux/arm/v7,linux/arm/v6")
                     .SetTag(tags)
                     .EnableRm()
-                    .SetPath(dockerfile.Parent)
+                    .SetPath(TeamcityServerPath)
+                    .SetFile(dockerfile)
                     .SetBuilder("rpi")
                     .EnablePull()
                     .EnablePush());
