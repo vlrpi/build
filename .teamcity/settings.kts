@@ -41,6 +41,13 @@ project {
             value = "Release",
             options = listOf("Debug" to "Debug", "Release" to "Release"),
             display = ParameterDisplay.NORMAL)
+        text (
+            "env.MatchPattern",
+            label = "MatchPattern",
+            description = "A pattern to process only specific operating systems",
+            value = "**/Dockerfile",
+            allowEmpty = true,
+            display = ParameterDisplay.NORMAL)
         select (
             "env.Verbosity",
             label = "Verbosity",

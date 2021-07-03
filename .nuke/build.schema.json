@@ -42,6 +42,10 @@
             "VSCode"
           ]
         },
+        "MatchPattern": {
+          "type": "string",
+          "description": "A pattern to process only specific operating systems"
+        },
         "NoLogo": {
           "type": "boolean",
           "description": "Disables displaying the NUKE logo"

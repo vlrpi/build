@@ -38,6 +38,9 @@ partial class Build : NukeBuild
     [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
     readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
 
+    [Parameter("A pattern to process only specific operating systems")]
+    readonly string MatchPattern = "**/Dockerfile";
+
     Target DockerLogIn => _ => _
         .Executes(() =>
         {

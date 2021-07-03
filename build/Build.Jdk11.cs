@@ -10,7 +10,7 @@ partial class Build
     Target CompileAndPushJdk11 => _ => _
         .Executes(() =>
         {
-            var dockerfiles = Jdk11Path.GlobFiles("**/Dockerfile");
+            var dockerfiles = Jdk11Path.GlobFiles(MatchPattern);
             var tagsToBuild = GetTagsToBuild(dockerfiles, Jdk11Path, Jdk11ModuleName);
             foreach (var (tags, dockerfile) in tagsToBuild)
             {
@@ -24,19 +24,4 @@ partial class Build
                     .EnablePush());
             }
         });
-
-    // Target PushJdk11 => _ => _
-    //     .DependsOn(CompileAndPushJdk11)
-    //     .Executes(() =>
-    //     {
-    //         var dockerfiles = Jdk11Path.GlobFiles("**/Dockerfile");
-    //         var tagsToBuild = GetTagsToBuild(dockerfiles, Jdk11Path, Jdk11ModuleName);
-    //         foreach (var (tags, _) in tagsToBuild)
-    //         {
-    //             foreach (var tag in tags)
-    //             {
-    //                 Docker($"push {tag}");
-    //             }
-    //         }
-    //     });
 }
