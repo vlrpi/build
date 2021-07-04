@@ -30,8 +30,9 @@ project {
     buildType(DockerLogIn)
     buildType(DockerLogOut)
     buildType(CreateBuilder)
+    buildType(PruneBuilderCache)
 
-    buildTypesOrder = arrayListOf(CompileAndPushJdk11, CompileAndPushTeamcityServer, CompileAndPushTeamcityAgent, CompileAndPushTeamcityAgentDotnet, DockerLogIn, DockerLogOut, CreateBuilder)
+    buildTypesOrder = arrayListOf(CompileAndPushJdk11, CompileAndPushTeamcityServer, CompileAndPushTeamcityAgent, CompileAndPushTeamcityAgentDotnet, DockerLogIn, DockerLogOut, CreateBuilder, PruneBuilderCache)
 
     params {
         select (
@@ -244,6 +245,32 @@ object CreateBuilder : BuildType({
         text(
             "teamcity.ui.runButton.caption",
             "Create Builder",
+            display = ParameterDisplay.HIDDEN)
+    }
+})
+object PruneBuilderCache : BuildType({
+    name = "PruneBuilderCache"
+    type = Type.DEPLOYMENT
+    vcs {
+        root(DslContext.settingsRoot)
+        cleanCheckout = true
+    }
+    steps {
+        exec {
+            path = "build.cmd"
+            arguments = "PruneBuilderCache --skip"
+            conditions { contains("teamcity.agent.jvm.os.name", "Windows") }
+        }
+        exec {
+            path = "build.sh"
+            arguments = "PruneBuilderCache --skip"
+            conditions { doesNotContain("teamcity.agent.jvm.os.name", "Windows") }
+        }
+    }
+    params {
+        text(
+            "teamcity.ui.runButton.caption",
+            "Prune Builder Cache",
             display = ParameterDisplay.HIDDEN)
     }
 })

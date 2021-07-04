@@ -81,7 +81,8 @@
               "CompileAndPushTeamcityServer",
               "CreateBuilder",
               "DockerLogIn",
-              "DockerLogOut"
+              "DockerLogOut",
+              "PruneBuilderCache"
             ]
           }
         },
@@ -97,7 +98,8 @@
               "CompileAndPushTeamcityServer",
               "CreateBuilder",
               "DockerLogIn",
-              "DockerLogOut"
+              "DockerLogOut",
+              "PruneBuilderCache"
             ]
           }
         },
