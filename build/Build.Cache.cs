@@ -5,7 +5,7 @@ using static Nuke.Common.Tools.Docker.DockerTasks;
 
 partial class Build
 {
-    AbsolutePath CachePath => RootDirectory / "cache";
+    AbsolutePath CachePath => TeamcityServerPath / "cache";
 	AbsolutePath TeamcityCachePath => CachePath / "teamcity";
 	Target BuildTeamcityCache => _ => _
 		.Executes(() =>
