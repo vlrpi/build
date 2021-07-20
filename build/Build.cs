@@ -20,7 +20,8 @@ using static Nuke.Common.Tools.Docker.DockerTasks;
         nameof(CompileAndPushTeamcityAgentDotnet),
         nameof(DockerLogIn),
         nameof(DockerLogOut),
-        nameof(CreateBuilder)
+        nameof(CreateBuilder),
+        nameof(PruneBuilderCache)
     }
 )]
 partial class Build : NukeBuild
@@ -37,6 +38,9 @@ partial class Build : NukeBuild
 
     [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
     readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
+
+    [Parameter("A pattern to process only specific operating systems")]
+    readonly string MatchPattern = "**/Dockerfile";
 
     Target DockerLogIn => _ => _
         .Executes(() =>
@@ -57,6 +61,12 @@ partial class Build : NukeBuild
         .Executes(() =>
         {
             Docker("buildx create --name rpi --node rpi-node --platform linux/arm64,linux/arm/v6,linux/arm/v7 --driver docker-container");
+        });
+
+    Target PruneBuilderCache => _ => _
+        .Executes(() =>
+        {
+            Docker("buildx prune -a -f --builder rpi");
         });
 
     static (string[] values, AbsolutePath dockerfile)[] GetTagsToBuild(IReadOnlyCollection<AbsolutePath> dockerfiles, AbsolutePath baseDir, string moduleName)

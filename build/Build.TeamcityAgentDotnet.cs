@@ -11,7 +11,7 @@ partial class Build
     Target CompileAndPushTeamcityAgentDotnet => _ => _
         .Executes(() =>
         {
-            var dockerfiles = TeamcityAgentDotnetPath.GlobFiles("**/Dockerfile");
+            var dockerfiles = TeamcityAgentDotnetPath.GlobFiles(MatchPattern);
             var tagsToBuild = GetTagsToBuild(dockerfiles, TeamcityAgentDotnetPath, TeamcityAgentDotnetModuleName);
             foreach (var (tags, dockerfile) in tagsToBuild)
             {
@@ -25,19 +25,4 @@ partial class Build
                     .EnablePush());
             }
         });
-
-    // Target PushTeamcityAgentDotnet => _ => _
-    //     .DependsOn(CompileAndPushTeamcityAgentDotnet)
-    //     .Executes(() =>
-    //     {
-    //         var dockerfiles = TeamcityAgentDotnetPath.GlobFiles("**/Dockerfile");
-    //         var tagsToBuild = GetTagsToBuild(dockerfiles, TeamcityAgentDotnetPath, TeamcityAgentDotnetModuleName);
-    //         foreach (var (tags, _) in tagsToBuild)
-    //         {
-    //             foreach (var tag in tags)
-    //             {
-    //                 Docker($"push {tag}");
-    //             }
-    //         }
-    //     });
 }

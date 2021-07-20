@@ -11,7 +11,7 @@ partial class Build
     Target CompileAndPushTeamcityServer => _ => _
         .Executes(() =>
         {
-            var dockerfiles = TeamcityServerPath.GlobFiles("**/Dockerfile");
+            var dockerfiles = TeamcityServerPath.GlobFiles(MatchPattern);
             var tagsToBuild = GetTagsToBuild(dockerfiles, TeamcityServerPath, TeamcityServerModuleName);
             foreach (var (tags, dockerfile) in tagsToBuild)
             {
@@ -19,25 +19,11 @@ partial class Build
                     .SetPlatform("linux/arm64,linux/arm/v7,linux/arm/v6")
                     .SetTag(tags)
                     .EnableRm()
-                    .SetPath(dockerfile.Parent)
+                    .SetPath(TeamcityServerPath)
+                    .SetFile(dockerfile)
                     .SetBuilder("rpi")
                     .EnablePull()
                     .EnablePush());
             }
         });
-
-    // Target PushTeamcityServer => _ => _
-    //     .DependsOn(CompileAndPushTeamcityServer)
-    //     .Executes(() =>
-    //     {
-    //         var dockerfiles = TeamcityServerPath.GlobFiles("**/Dockerfile");
-    //         var tagsToBuild = GetTagsToBuild(dockerfiles, TeamcityServerPath, TeamcityServerModuleName);
-    //         foreach (var (tags, _) in tagsToBuild)
-    //         {
-    //             foreach (var tag in tags)
-    //             {
-    //                 Docker($"push {tag}");
-    //             }
-    //         }
-    //     });
 }
