@@ -21,7 +21,8 @@ using static Nuke.Common.Tools.Docker.DockerTasks;
         nameof(DockerLogIn),
         nameof(DockerLogOut),
         nameof(CreateBuilder),
-        nameof(PruneBuilderCache)
+        nameof(PruneBuilderCache),
+        nameof(BuildTeamcityCache)
     }
 )]
 partial class Build : NukeBuild

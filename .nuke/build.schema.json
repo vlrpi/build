@@ -75,6 +75,7 @@
           "items": {
             "type": "string",
             "enum": [
+              "BuildTeamcityCache",
               "CompileAndPushJdk11",
               "CompileAndPushTeamcityAgent",
               "CompileAndPushTeamcityAgentDotnet",
@@ -92,6 +93,7 @@
           "items": {
             "type": "string",
             "enum": [
+              "BuildTeamcityCache",
               "CompileAndPushJdk11",
               "CompileAndPushTeamcityAgent",
               "CompileAndPushTeamcityAgentDotnet",
