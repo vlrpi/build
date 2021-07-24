@@ -17,6 +17,6 @@ partial class Build
 				.SetPath(TeamcityCachePath)
 				.SetBuilder("rpi")
 				.EnablePull()
-				.EnableLoad());
+				.EnablePush());
 		});
 }
