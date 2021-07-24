@@ -7,6 +7,7 @@ using Nuke.Common;
 using Nuke.Common.CI.TeamCity;
 using Nuke.Common.IO;
 using Nuke.Common.Tools.Docker;
+using Polly;
 using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.Tools.Docker.DockerTasks;
 
@@ -41,7 +42,7 @@ partial class Build : NukeBuild
     readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
 
     [Parameter("A pattern to process only specific operating systems")]
-    readonly string MatchPattern = "**/Dockerfile";
+    readonly string[] MatchPatterns = {"**/Dockerfile"};
 
     Target DockerLogIn => _ => _
         .Executes(() =>
@@ -69,6 +70,10 @@ partial class Build : NukeBuild
         {
             Docker("buildx prune -a -f --builder rpi");
         });
+
+    Polly.Policy RetryPolicy => Policy.Handle<Exception>()
+        .WaitAndRetry(10, attempt => TimeSpan.FromMinutes(attempt * attempt),
+            (ex, _) => Console.WriteLine(ex));
 
     static (string[] values, AbsolutePath dockerfile)[] GetTagsToBuild(IReadOnlyCollection<AbsolutePath> dockerfiles, AbsolutePath baseDir, string moduleName)
     {
@@ -107,7 +112,7 @@ partial class Build : NukeBuild
             {
                 var sb = new StringBuilder();
                 sb.Append($"vlrpi/{moduleName}:");
-                string[] separatedPath = pathToDockerfile.Parent.Parent.ToString().Split(Path.DirectorySeparatorChar);
+                string[] separatedPath = pathToDockerfile.Parent!.Parent!.ToString().Split(Path.DirectorySeparatorChar);
                 var parts = separatedPath.SkipWhile(it => it != moduleName).Skip(1).Append(item);
                 var partsAfterExclude = ExcludeFromTag(parts, baseDir);
                 sb.AppendJoin('-', partsAfterExclude);

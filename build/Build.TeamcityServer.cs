@@ -11,19 +11,22 @@ partial class Build
     Target CompileAndPushTeamcityServer => _ => _
         .Executes(() =>
         {
-            var dockerfiles = TeamcityServerPath.GlobFiles(MatchPattern);
+            var dockerfiles = TeamcityServerPath.GlobFiles(MatchPatterns);
             var tagsToBuild = GetTagsToBuild(dockerfiles, TeamcityServerPath, TeamcityServerModuleName);
             foreach (var (tags, dockerfile) in tagsToBuild)
             {
-                DockerBuildxBuild(_ => _
-                    .SetPlatform("linux/arm64,linux/arm/v7,linux/arm/v6")
-                    .SetTag(tags)
-                    .EnableRm()
-                    .SetPath(TeamcityServerPath)
-                    .SetFile(dockerfile)
-                    .SetBuilder("rpi")
-                    .EnablePull()
-                    .EnablePush());
+                RetryPolicy.Execute(() =>
+                {
+                    DockerBuildxBuild(_ => _
+                        .SetPlatform("linux/arm64,linux/arm/v7,linux/arm/v6")
+                        .SetTag(tags)
+                        .EnableRm()
+                        .SetPath(TeamcityServerPath)
+                        .SetFile(dockerfile)
+                        .SetBuilder("rpi")
+                        .EnablePull()
+                        .EnablePush());
+                });
             }
         });
 }

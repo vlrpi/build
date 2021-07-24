@@ -11,18 +11,21 @@ partial class Build
     Target CompileAndPushTeamcityAgentDotnet => _ => _
         .Executes(() =>
         {
-            var dockerfiles = TeamcityAgentDotnetPath.GlobFiles(MatchPattern);
+            var dockerfiles = TeamcityAgentDotnetPath.GlobFiles(MatchPatterns);
             var tagsToBuild = GetTagsToBuild(dockerfiles, TeamcityAgentDotnetPath, TeamcityAgentDotnetModuleName);
             foreach (var (tags, dockerfile) in tagsToBuild)
             {
-                DockerBuildxBuild(_ => _
-                    .SetPlatform("linux/arm64,linux/arm/v7,linux/arm/v6")
-                    .SetTag(tags)
-                    .EnableRm()
-                    .SetPath(dockerfile.Parent)
-                    .SetBuilder("rpi")
-                    .EnablePull()
-                    .EnablePush());
+                RetryPolicy.Execute(() =>
+                {
+                    DockerBuildxBuild(_ => _
+                        .SetPlatform("linux/arm64,linux/arm/v7,linux/arm/v6")
+                        .SetTag(tags)
+                        .EnableRm()
+                        .SetPath(dockerfile.Parent)
+                        .SetBuilder("rpi")
+                        .EnablePull()
+                        .EnablePush());
+                });
             }
         });
 }
