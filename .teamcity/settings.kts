@@ -44,8 +44,8 @@ project {
             options = listOf("Debug" to "Debug", "Release" to "Release"),
             display = ParameterDisplay.NORMAL)
         text (
-            "env.MatchPattern",
-            label = "MatchPattern",
+            "env.MatchPatterns",
+            label = "MatchPatterns",
             description = "A pattern to process only specific operating systems",
             value = "**/Dockerfile",
             allowEmpty = true,

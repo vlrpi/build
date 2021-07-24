@@ -42,9 +42,12 @@
             "VSCode"
           ]
         },
-        "MatchPattern": {
-          "type": "string",
-          "description": "A pattern to process only specific operating systems"
+        "MatchPatterns": {
+          "type": "array",
+          "description": "A pattern to process only specific operating systems",
+          "items": {
+            "type": "string"
+          }
         },
         "NoLogo": {
           "type": "boolean",
