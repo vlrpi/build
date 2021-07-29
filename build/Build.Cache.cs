@@ -5,18 +5,36 @@ using static Nuke.Common.Tools.Docker.DockerTasks;
 
 partial class Build
 {
-    AbsolutePath CachePath => TeamcityServerPath / "cache";
-	AbsolutePath TeamcityCachePath => CachePath / "teamcity";
+	AbsolutePath TeamcityCachePath => TeamcityServerPath / "cache" / "teamcity";
+	
 	Target BuildTeamcityCache => _ => _
 		.Executes(() =>
 		{
-			DockerBuildxBuild(_ => _
-				.SetPlatform("linux/arm64,linux/arm/v7,linux/arm/v6")
-				.SetTag("vlrpi/cache:teamcity")
-				.EnableRm()
-				.SetPath(TeamcityCachePath)
-				.SetBuilder("rpi")
-				.EnablePull()
-				.EnablePush());
+			RetryPolicy.Execute(() =>
+			{
+				DockerBuild(_ => _
+					.SetTag("vlrpi/cache:teamcity")
+					.EnableRm()
+					.SetPath(TeamcityCachePath)
+					.EnablePull());
+			});
+		});
+
+	Target DownloadTeamcityBinaries => _ => _
+		.DependsOn(BuildTeamcityCache)
+		.Executes(() =>
+		{
+			DockerCreate(_ => _
+				.SetImage("vlrpi/cache:teamcity")
+				.SetName("vlrpi-cache-teamcity"));
+			try
+			{
+				Docker("cp vlrpi-cache-teamcity:/teamcity/ cache/", TeamcityServerPath);
+			}
+			finally
+			{
+				DockerRm(_ => _
+					.SetContainers("vlrpi-cache-teamcity"));
+			}
 		});
 }

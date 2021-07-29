@@ -22,8 +22,12 @@ using static Nuke.Common.Tools.Docker.DockerTasks;
         nameof(DockerLogIn),
         nameof(DockerLogOut),
         nameof(CreateBuilder),
-        nameof(PruneBuilderCache),
-        nameof(BuildTeamcityCache)
+        nameof(PruneBuilderCache)
+    },
+    NonEntryTargets = new[]
+    {
+        nameof(BuildTeamcityCache),
+        nameof(DownloadTeamcityBinaries)
     }
 )]
 partial class Build : NukeBuild

@@ -31,9 +31,8 @@ project {
     buildType(DockerLogOut)
     buildType(CreateBuilder)
     buildType(PruneBuilderCache)
-    buildType(BuildTeamcityCache)
 
-    buildTypesOrder = arrayListOf(CompileAndPushJdk11, CompileAndPushTeamcityServer, CompileAndPushTeamcityAgent, CompileAndPushTeamcityAgentDotnet, DockerLogIn, DockerLogOut, CreateBuilder, PruneBuilderCache, BuildTeamcityCache)
+    buildTypesOrder = arrayListOf(CompileAndPushJdk11, CompileAndPushTeamcityServer, CompileAndPushTeamcityAgent, CompileAndPushTeamcityAgentDotnet, DockerLogIn, DockerLogOut, CreateBuilder, PruneBuilderCache)
 
     params {
         select (
@@ -103,12 +102,12 @@ object CompileAndPushTeamcityServer : BuildType({
     steps {
         exec {
             path = "build.cmd"
-            arguments = "CompileAndPushTeamcityServer --skip"
+            arguments = "BuildTeamcityCache DownloadTeamcityBinaries CompileAndPushTeamcityServer --skip"
             conditions { contains("teamcity.agent.jvm.os.name", "Windows") }
         }
         exec {
             path = "build.sh"
-            arguments = "CompileAndPushTeamcityServer --skip"
+            arguments = "BuildTeamcityCache DownloadTeamcityBinaries CompileAndPushTeamcityServer --skip"
             conditions { doesNotContain("teamcity.agent.jvm.os.name", "Windows") }
         }
     }
@@ -272,32 +271,6 @@ object PruneBuilderCache : BuildType({
         text(
             "teamcity.ui.runButton.caption",
             "Prune Builder Cache",
-            display = ParameterDisplay.HIDDEN)
-    }
-})
-object BuildTeamcityCache : BuildType({
-    name = "BuildTeamcityCache"
-    type = Type.DEPLOYMENT
-    vcs {
-        root(DslContext.settingsRoot)
-        cleanCheckout = true
-    }
-    steps {
-        exec {
-            path = "build.cmd"
-            arguments = "BuildTeamcityCache --skip"
-            conditions { contains("teamcity.agent.jvm.os.name", "Windows") }
-        }
-        exec {
-            path = "build.sh"
-            arguments = "BuildTeamcityCache --skip"
-            conditions { doesNotContain("teamcity.agent.jvm.os.name", "Windows") }
-        }
-    }
-    params {
-        text(
-            "teamcity.ui.runButton.caption",
-            "Build Teamcity Cache",
             display = ParameterDisplay.HIDDEN)
     }
 })

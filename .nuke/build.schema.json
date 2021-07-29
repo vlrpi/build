@@ -86,6 +86,7 @@
               "CreateBuilder",
               "DockerLogIn",
               "DockerLogOut",
+              "DownloadTeamcityBinaries",
               "PruneBuilderCache"
             ]
           }
@@ -104,6 +105,7 @@
               "CreateBuilder",
               "DockerLogIn",
               "DockerLogOut",
+              "DownloadTeamcityBinaries",
               "PruneBuilderCache"
             ]
           }

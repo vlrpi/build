@@ -9,6 +9,7 @@ partial class Build
     AbsolutePath TeamcityServerPath => RootDirectory / TeamcityServerModuleName;
 
     Target CompileAndPushTeamcityServer => _ => _
+        .DependsOn(DownloadTeamcityBinaries)
         .Executes(() =>
         {
             var dockerfiles = TeamcityServerPath.GlobFiles(MatchPatterns);
