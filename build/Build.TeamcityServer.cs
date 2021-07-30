@@ -1,4 +1,5 @@
-﻿using Nuke.Common;
+﻿using System.Linq;
+using Nuke.Common;
 using Nuke.Common.IO;
 using Nuke.Common.Tools.Docker;
 using static Nuke.Common.Tools.Docker.DockerTasks;
@@ -12,7 +13,9 @@ partial class Build
         .DependsOn(DownloadTeamcityBinaries)
         .Executes(() =>
         {
-            var dockerfiles = TeamcityServerPath.GlobFiles(MatchPatterns);
+            var dockerfiles = TeamcityServerPath.GlobFiles(MatchPatterns)
+                .Where(f => !((string)f).Contains("cache"))
+                .ToList();
             var tagsToBuild = GetTagsToBuild(dockerfiles, TeamcityServerPath, TeamcityServerModuleName);
             foreach (var (tags, dockerfile) in tagsToBuild)
             {
