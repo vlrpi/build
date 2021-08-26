@@ -18,7 +18,7 @@ partial class Build
                 RetryPolicy.Execute(() =>
                 {
                     DockerBuildxBuild(_ => _
-                        .SetPlatform("linux/arm64,linux/arm/v7,linux/arm/v6")
+                        .SetPlatform("linux/arm64,linux/arm/v7")
                         .SetTag(tags)
                         .EnableRm()
                         .SetPath(dockerfile.Parent)
