@@ -1,16 +1,16 @@
 [submodule "rpi-jdk11"]
 	path = rpi-jdk11
-	url = https://github.com/vlrpi/rpi-jdk11.git
+	url = ../rpi-jdk11.git
 	branch = main
 [submodule "rpi-teamcity-agent"]
 	path = rpi-teamcity-agent
-	url = https://github.com/vlrpi/rpi-teamcity-agent.git
+	url = ../rpi-teamcity-agent.git
 	branch = main
 [submodule "rpi-teamcity-server"]
 	path = rpi-teamcity-server
-	url = https://github.com/vlrpi/rpi-teamcity-server.git
+	url = ../rpi-teamcity-server.git
 	branch = main
 [submodule "rpi-teamcity-agent-dotnet"]
 	path = rpi-teamcity-agent-dotnet
-	url = https://github.com/vlrpi/rpi-teamcity-agent-dotnet.git
+	url = ../rpi-teamcity-agent-dotnet.git
 	branch = main
