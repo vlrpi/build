@@ -15,7 +15,10 @@
     <None Update="teamcity-agent-dotnet\supported.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="teamcity-agent-dotnet\versions\**\**.txt">
+    <None Update="teamcity-agent-dotnet\versions\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="teamcity.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

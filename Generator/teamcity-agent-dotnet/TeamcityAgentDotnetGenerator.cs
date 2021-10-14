@@ -61,8 +61,10 @@ RUN curl -SL --output dotnet.tar.gz https://dotnetcli.blob.core.windows.net/dotn
 
         private static IReadOnlyCollection<DotnetVersionInfo> GetDotnetVersions(string osName, string osVersion)
         {
-            string[] ltsVersions = File.ReadAllText("lts.txt").TrimEnd().Split(',');
-            string[] supportedVersions = File.ReadAllText("supported.txt").TrimEnd().Split(',');
+            string[] ltsVersions = File.ReadAllText(Path.Combine("teamcity-agent-dotnet", "lts.txt"))
+                .TrimEnd().Split(',');
+            string[] supportedVersions = File.ReadAllText(Path.Combine("teamcity-agent-dotnet", "supported.txt"))
+                .TrimEnd().Split(',');
             
             string path = Path.Combine("teamcity-agent-dotnet", "versions");
             string[] versionFiles = Directory.GetFiles(path, "version-*.txt", SearchOption.TopDirectoryOnly);
@@ -109,7 +111,7 @@ RUN curl -SL --output dotnet.tar.gz https://dotnetcli.blob.core.windows.net/dotn
         {
             var commands = new List<string>(dotnetVersions.Count);
             
-            foreach (DotnetVersionInfo dotnetVersion in dotnetVersions)
+            foreach (DotnetVersionInfo dotnetVersion in dotnetVersions.OrderBy(v => v.Key))
             {
                 switch (arch)
                 {
@@ -151,7 +153,8 @@ RUN curl -SL --output dotnet.tar.gz https://dotnetcli.blob.core.windows.net/dotn
                     
                     foreach (var (key, dotnetVersionsArray) in dotnetVersionsPack)
                     {
-                        string installationCommands = GetInstallationCommands(dotnetArch, dotnetVersionsArray);
+                        string installationCommands = GetInstallationCommands(dotnetArch, dotnetVersionsArray)
+                            .Replace("{DOTNET_ARCH}", dotnetArch);
                         string dockerfileContent = GetDockerfileTemplate()
                             .Replace("{OS_NAME}", osName)
                             .Replace("{OS_VERSION}", osVersion)

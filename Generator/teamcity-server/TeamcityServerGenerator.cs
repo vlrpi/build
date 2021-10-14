@@ -53,7 +53,7 @@ ENTRYPOINT [""TeamCity/bin/teamcity-server.sh"",""run""]
                 List<string> tags = null;
                 if (isLatest || isLatestForYear)
                 {
-                    tags = new List<string>(2);
+                    tags = new List<string>(3);
                     if (isLatest)
                     {
                         tags.Add("latest");
@@ -62,6 +62,7 @@ ENTRYPOINT [""TeamCity/bin/teamcity-server.sh"",""run""]
                     {
                         tags.Add(separatedTeamcityVersion[0]);
                     }
+                    tags.Add(teamcityVersion);
                 }
                 
                 yield return new DockerfileInfo(path, dockerfileContent, tags);

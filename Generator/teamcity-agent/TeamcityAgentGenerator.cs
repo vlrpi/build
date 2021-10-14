@@ -1,10 +1,11 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 // ReSharper disable once CheckNamespace
 namespace Generator
 {
-    public class TeamcityAgentGenerator : IGenerator
+    public sealed class TeamcityAgentGenerator : IGenerator
     {
         private static string GetDockerfileTemplate()
         {
@@ -53,7 +54,7 @@ ENTRYPOINT [""TeamCity/buildAgent/bin/agent.sh"",""run""]
             return teamcityVersionsText.Split(',');
         }
 
-        public virtual IEnumerable<DockerfileInfo> GetDockerfiles(string osName, string osVersion)
+        public IEnumerable<DockerfileInfo> GetDockerfiles(string osName, string osVersion)
         {
             string dockerComposeVersion = GetDockerComposeVersion();
             string[] teamcityVersions = GetTeamcityVersions();
@@ -65,7 +66,28 @@ ENTRYPOINT [""TeamCity/buildAgent/bin/agent.sh"",""run""]
                     .Replace("{OS_VERSION}", osVersion)
                     .Replace("{TEAMCITY_VERSION}", teamcityVersion);
                 string path = Path.Combine("..", "rpi-teamcity-agent", osName, osVersion, teamcityVersion);
-                yield return new DockerfileInfo(path, dockerfileContent);
+                
+                bool isLatest = teamcityVersion == teamcityVersions[^1];
+                string[] separatedTeamcityVersion = teamcityVersion.Split('.');
+                bool isLatestForYear = teamcityVersions.Last(v => v.StartsWith(separatedTeamcityVersion[0])) ==
+                                       teamcityVersion;
+                
+                List<string> tags = null;
+                if (isLatest || isLatestForYear)
+                {
+                    tags = new List<string>(3);
+                    if (isLatest)
+                    {
+                        tags.Add("latest");
+                    }
+                    if (isLatestForYear)
+                    {
+                        tags.Add(separatedTeamcityVersion[0]);
+                    }
+                    tags.Add(teamcityVersion);
+                }
+                
+                yield return new DockerfileInfo(path, dockerfileContent, tags);
             }
         }
     }
