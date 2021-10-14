@@ -43,9 +43,18 @@ tempDir=../temp
                     IEnumerable<DockerfileInfo> dockerfiles = generator.GetDockerfiles(osName, osVersion);
                     foreach (DockerfileInfo dockerfile in dockerfiles)
                     {
-                        Directory.CreateDirectory(dockerfile.RelativePath);
+                        DirectoryInfo dir = Directory.CreateDirectory(dockerfile.RelativePath);
                         File.WriteAllText(Path.Combine(dockerfile.RelativePath, "Dockerfile"), dockerfile.Content,
                             Encoding.UTF8);
+
+                        if (dockerfile.RelativePath.Contains("dotnet"))
+                        {
+                            string excludePath = Path.Combine(dir.Parent!.Parent!.FullName, ".exclude");
+                            if (!File.Exists(excludePath))
+                            {
+                                File.Create(excludePath).Dispose();
+                            }
+                        }
                         
                         if (dockerfile.Tags != null)
                         {
