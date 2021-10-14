@@ -1,0 +1,8 @@
+obj/
+bin/
+*.user
+.idea/
+.vs/
+.vscode/
+debian/
+ubuntu/
