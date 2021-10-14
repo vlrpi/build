@@ -2,6 +2,7 @@
 using Nuke.Common;
 using Nuke.Common.IO;
 using Nuke.Common.Tools.Docker;
+using Utils;
 using static Nuke.Common.Tools.Docker.DockerTasks;
 
 partial class Build
@@ -22,8 +23,22 @@ partial class Build
                 RetryPolicy.Execute(() =>
                 {
                     DockerBuildxBuild(_ => _
-                        .SetPlatform("linux/arm64,linux/arm/v7,linux/arm/v6")
-                        .SetTag(tags)
+                        .SetPlatform("linux/arm64")
+                        .SetTag(tags.Select(t => t.WithImage("teamcity-server-arm64v8")))
+                        .AddBuildArg("BASE_ARCH=arm64v8")
+                        .EnableRm()
+                        .SetPath(TeamcityServerPath)
+                        .SetFile(dockerfile)
+                        .SetBuilder("rpi")
+                        .EnablePull()
+                        .EnablePush());
+                });
+                RetryPolicy.Execute(() =>
+                {
+                    DockerBuildxBuild(_ => _
+                        .SetPlatform("linux/arm/v7")
+                        .SetTag(tags.Select(t => t.WithImage("teamcity-server-arm32v7")))
+                        .AddBuildArg("BASE_ARCH=arm32v7")
                         .EnableRm()
                         .SetPath(TeamcityServerPath)
                         .SetFile(dockerfile)

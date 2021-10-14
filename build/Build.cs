@@ -94,7 +94,7 @@ partial class Build : NukeBuild
     static string GetTagName(string pathToDockerfile, AbsolutePath baseDir, string moduleName)
     {
         var sb = new StringBuilder();
-        sb.Append($"vlrpi/{moduleName}:");
+        sb.Append("vlrpi/{IMAGE}:");
         string[] separatedPath = pathToDockerfile.Split(Path.DirectorySeparatorChar);
         var parts = separatedPath.SkipWhile(it => it != moduleName).Skip(1).TakeWhile(it => it != "Dockerfile");
         var partsAfterExclude = ExcludeFromTag(parts, baseDir);
@@ -115,7 +115,7 @@ partial class Build : NukeBuild
             foreach (string item in items)
             {
                 var sb = new StringBuilder();
-                sb.Append($"vlrpi/{moduleName}:");
+                sb.Append("vlrpi/{IMAGE}:");
                 string[] separatedPath = pathToDockerfile.Parent!.Parent!.ToString().Split(Path.DirectorySeparatorChar);
                 var parts = separatedPath.SkipWhile(it => it != moduleName).Skip(1).Append(item);
                 var partsAfterExclude = ExcludeFromTag(parts, baseDir);
