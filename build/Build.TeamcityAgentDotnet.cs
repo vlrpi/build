@@ -38,6 +38,7 @@ partial class Build
                     DockerBuildxBuild(_ => _
                         .SetPlatform(platform)
                         .SetTag(tags.Select(t => t.WithImage($"teamcity-agent-dotnet-{baseArch}")))
+                        .AddBuildArg($"BASE_ARCH={baseArch}")
                         .EnableRm()
                         .SetPath(dockerfile.Parent)
                         .SetBuilder("rpi")
