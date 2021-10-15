@@ -49,10 +49,16 @@ tempDir=../temp
 
                         if (dockerfile.RelativePath.Contains("dotnet"))
                         {
-                            string excludePath = Path.Combine(dir.Parent!.Parent!.FullName, ".exclude");
-                            if (!File.Exists(excludePath))
+                            string excludePathLocal = Path.Combine(dir.Parent!.FullName, ".exclude");
+                            if (!File.Exists(excludePathLocal))
                             {
-                                File.Create(excludePath).Dispose();
+                                File.Create(excludePathLocal).Dispose();
+                            }
+
+                            string excludePathGlobal = Path.Combine(dir.Parent!.Parent!.FullName, ".exclude");
+                            if (!File.Exists(excludePathGlobal))
+                            {
+                                File.Create(excludePathGlobal).Dispose();
                             }
                         }
                         
