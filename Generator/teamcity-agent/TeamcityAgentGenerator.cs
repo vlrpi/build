@@ -12,12 +12,13 @@ namespace Generator
             return @"
 
 ARG BASE_ARCH
-ARG DOCKER_ARCH
 
 FROM vlrpi/teamcity-server-${BASE_ARCH}:{OS_NAME}-{OS_VERSION}-{TEAMCITY_VERSION}
 LABEL maintainer=""Vova Lantsov""
 LABEL contact_email=""contact@vova-lantsov.dev""
 LABEL telegram=""https://t.me/vova_lantsov""
+
+ARG DOCKER_ARCH
 
 ADD buildAgent.properties TeamCity/buildAgent/conf/
 
