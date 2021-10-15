@@ -19,12 +19,12 @@ partial class Build
             foreach (var (tags, dockerfile) in tagsToBuild)
             {
                 string platform, baseArch;
-                if (dockerfile.Contains("arm64"))
+                if (((string)dockerfile).Contains("arm64"))
                 {
                     platform = "linux/arm64";
                     baseArch = "arm64v8";
                 }
-                else if (dockerfile.Contains("arm"))
+                else if (((string)dockerfile).Contains("arm"))
                 {
                     platform = "linux/arm/v7";
                     baseArch = "arm32v7";
@@ -33,6 +33,7 @@ partial class Build
                 {
                     throw new NotSupportedException(dockerfile);
                 }
+
                 RetryPolicy.Execute(() =>
                 {
                     DockerBuildxBuild(_ => _
