@@ -53,9 +53,7 @@ partial class Build
                     string tagWithImage = tag.WithImage("teamcity-server");
                     RetryPolicy.Execute(() =>
                     {
-                        DockerManifest(_ => _
-                            .SetCommand(
-                                $"create {tagWithImage} --amend {tag.WithImage("teamcity-server-arm64v8")} --amend {tag.WithImage("teamcity-server-arm32v7")}"));
+                        Docker($"manifest create {tagWithImage} --amend {tag.WithImage("teamcity-server-arm64v8")} --amend {tag.WithImage("teamcity-server-arm32v7")}");
                         DockerManifestPush(_ => _
                             .SetManifestList(tagWithImage));
                     });

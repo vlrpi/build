@@ -52,9 +52,7 @@ partial class Build
                     string tagWithImage = tag.WithImage("teamcity-agent-dotnet");
                     RetryPolicy.Execute(() =>
                     {
-                        DockerManifest(_ => _
-                            .SetCommand(
-                                $"create {tagWithImage} --amend {tag.WithImage($"teamcity-agent-dotnet-{baseArch}")}"));
+                        Docker($"manifest create {tagWithImage} --amend {tag.WithImage($"teamcity-agent-dotnet-{baseArch}")}");
                         DockerManifestPush(_ => _
                             .SetManifestList(tagWithImage));
                     });
