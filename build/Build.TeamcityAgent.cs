@@ -30,6 +30,7 @@ partial class Build
                         .EnablePull()
                         .EnablePush());
                 });
+                
                 RetryPolicy.Execute(() =>
                 {
                     DockerBuildxBuild(_ => _
@@ -43,6 +44,19 @@ partial class Build
                         .EnablePull()
                         .EnablePush());
                 });
+                
+                foreach (string tag in tags)
+                {
+                    string tagWithImage = tag.WithImage("teamcity-agent");
+                    RetryPolicy.Execute(() =>
+                    {
+                        DockerManifest(_ => _
+                            .SetCommand(
+                                $"create {tagWithImage} --amend {tag.WithImage("teamcity-agent-arm64v8")} --amend {tag.WithImage("teamcity-agent-arm32v7")}"));
+                        DockerManifestPush(_ => _
+                            .SetManifestList(tagWithImage));
+                    });
+                }
             }
         });
 }

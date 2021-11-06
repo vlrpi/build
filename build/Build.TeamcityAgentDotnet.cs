@@ -46,6 +46,19 @@ partial class Build
                         .EnablePull()
                         .EnablePush());
                 });
+                
+                foreach (string tag in tags)
+                {
+                    string tagWithImage = tag.WithImage("teamcity-agent-dotnet");
+                    RetryPolicy.Execute(() =>
+                    {
+                        DockerManifest(_ => _
+                            .SetCommand(
+                                $"create {tagWithImage} --amend {tag.WithImage($"teamcity-agent-dotnet-{baseArch}")}"));
+                        DockerManifestPush(_ => _
+                            .SetManifestList(tagWithImage));
+                    });
+                }
             }
         });
 }

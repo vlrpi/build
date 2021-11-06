@@ -66,7 +66,7 @@ partial class Build : NukeBuild
     Target CreateBuilder => _ => _
         .Executes(() =>
         {
-            Docker("buildx create --name rpi --node rpi-node --platform linux/arm64,linux/arm/v6,linux/arm/v7 --driver docker-container");
+            Docker("buildx create --name rpi --node rpi-node --platform linux/arm64,linux/arm/v7 --driver docker-container");
         });
 
     Target PruneBuilderCache => _ => _

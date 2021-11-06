@@ -9,6 +9,7 @@ partial class Build
 {
     const string Jdk11ModuleName = "rpi-jdk11";
     AbsolutePath Jdk11Path => RootDirectory / Jdk11ModuleName;
+
     Target CompileAndPushJdk11 => _ => _
         .Executes(() =>
         {
@@ -29,6 +30,7 @@ partial class Build
                         .EnablePull()
                         .EnablePush());
                 });
+
                 RetryPolicy.Execute(() =>
                 {
                     DockerBuildxBuild(_ => _
@@ -42,6 +44,19 @@ partial class Build
                         .EnablePull()
                         .EnablePush());
                 });
+
+                foreach (string tag in tags)
+                {
+                    string tagWithImage = tag.WithImage("jdk");
+                    RetryPolicy.Execute(() =>
+                    {
+                        DockerManifest(_ => _
+                            .SetCommand(
+                                $"create {tagWithImage} --amend {tag.WithImage("jdk-arm64v8")} --amend {tag.WithImage("jdk-arm32v7")}"));
+                        DockerManifestPush(_ => _
+                            .SetManifestList(tagWithImage));
+                    });
+                }
             }
         });
 }
