@@ -50,9 +50,7 @@ partial class Build
                     string tagWithImage = tag.WithImage("jdk");
                     RetryPolicy.Execute(() =>
                     {
-                        DockerManifest(_ => _
-                            .SetCommand(
-                                $"create {tagWithImage} --amend {tag.WithImage("jdk-arm64v8")} --amend {tag.WithImage("jdk-arm32v7")}"));
+                        Docker($"manifest create {tagWithImage} --amend {tag.WithImage("jdk-arm64v8")} --amend {tag.WithImage("jdk-arm32v7")}");
                         DockerManifestPush(_ => _
                             .SetManifestList(tagWithImage));
                     });
