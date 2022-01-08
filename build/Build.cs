@@ -8,11 +8,10 @@ using Nuke.Common.CI.TeamCity;
 using Nuke.Common.IO;
 using Nuke.Common.Tools.Docker;
 using Polly;
-using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.Tools.Docker.DockerTasks;
 
 [TeamCity(
-    Version = "2021.1",
+    Version = "2021.2",
     ManuallyTriggeredTargets = new[]
     {
         nameof(CompileAndPushJdk11),
@@ -106,7 +105,7 @@ partial class Build : NukeBuild
     {
         AbsolutePath pathToTagsConfigFile = pathToDockerfile.Parent / ".tags";
         
-        if (FileExists(pathToTagsConfigFile))
+        if (pathToTagsConfigFile.FileExists())
         {
             string[] items = File.ReadAllLines(pathToTagsConfigFile);
             var tags = new string[items.Length];
@@ -134,7 +133,7 @@ partial class Build : NukeBuild
         foreach (var part in parts)
         {
             baseDir /= part;
-            if (!FileExists(baseDir / ".exclude"))
+            if (!(baseDir / ".exclude").FileExists())
                 yield return part;
         }
     }

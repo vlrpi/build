@@ -3,13 +3,13 @@ using System.IO;
 using System.Linq;
 
 // ReSharper disable once CheckNamespace
-namespace Generator
+namespace Generator;
+
+public sealed class TeamcityAgentGenerator : IGenerator
 {
-    public sealed class TeamcityAgentGenerator : IGenerator
+    private static string GetDockerfileTemplate()
     {
-        private static string GetDockerfileTemplate()
-        {
-            return @"
+        return @"
 
 ARG BASE_ARCH
 
@@ -40,56 +40,55 @@ EXPOSE 8111 9090
 ENTRYPOINT [""TeamCity/buildAgent/bin/agent.sh"",""run""]
 
 ".Trim();
-        }
+    }
 
-        private static string GetDockerComposeVersion()
-        {
-            string path = Path.Combine("teamcity-agent", "docker-compose.txt");
-            string dockerComposeVersion = File.ReadAllText(path).TrimEnd();
-            return dockerComposeVersion;
-        }
+    private static string GetDockerComposeVersion()
+    {
+        string path = Path.Combine("teamcity-agent", "docker-compose.txt");
+        string dockerComposeVersion = File.ReadAllText(path).TrimEnd();
+        return dockerComposeVersion;
+    }
 
-        private static string[] GetTeamcityVersions()
-        {
-            string teamcityVersionsText = File.ReadAllText("teamcity.txt").TrimEnd();
-            return teamcityVersionsText.Split(',');
-        }
+    private static string[] GetTeamcityVersions()
+    {
+        string teamcityVersionsText = File.ReadAllText("teamcity.txt").TrimEnd();
+        return teamcityVersionsText.Split(',');
+    }
 
-        public IEnumerable<DockerfileInfo> GetDockerfiles(string osName, string osVersion)
+    public IEnumerable<DockerfileInfo> GetDockerfiles(string osName, string osVersion)
+    {
+        string dockerComposeVersion = GetDockerComposeVersion();
+        string[] teamcityVersions = GetTeamcityVersions();
+        foreach (string teamcityVersion in teamcityVersions)
         {
-            string dockerComposeVersion = GetDockerComposeVersion();
-            string[] teamcityVersions = GetTeamcityVersions();
-            foreach (string teamcityVersion in teamcityVersions)
+            string dockerfileContent = GetDockerfileTemplate()
+                .Replace("{DOCKER_COMPOSE_VERSION}", dockerComposeVersion)
+                .Replace("{OS_NAME}", osName)
+                .Replace("{OS_VERSION}", osVersion)
+                .Replace("{TEAMCITY_VERSION}", teamcityVersion);
+            string path = Path.Combine("..", "rpi-teamcity-agent", osName, osVersion, teamcityVersion);
+                
+            bool isLatest = teamcityVersion == teamcityVersions[^1];
+            string[] separatedTeamcityVersion = teamcityVersion.Split('.');
+            bool isLatestForYear = teamcityVersions.Last(v => v.StartsWith(separatedTeamcityVersion[0])) ==
+                                   teamcityVersion;
+                
+            List<string> tags = null;
+            if (isLatest || isLatestForYear)
             {
-                string dockerfileContent = GetDockerfileTemplate()
-                    .Replace("{DOCKER_COMPOSE_VERSION}", dockerComposeVersion)
-                    .Replace("{OS_NAME}", osName)
-                    .Replace("{OS_VERSION}", osVersion)
-                    .Replace("{TEAMCITY_VERSION}", teamcityVersion);
-                string path = Path.Combine("..", "rpi-teamcity-agent", osName, osVersion, teamcityVersion);
-                
-                bool isLatest = teamcityVersion == teamcityVersions[^1];
-                string[] separatedTeamcityVersion = teamcityVersion.Split('.');
-                bool isLatestForYear = teamcityVersions.Last(v => v.StartsWith(separatedTeamcityVersion[0])) ==
-                                       teamcityVersion;
-                
-                List<string> tags = null;
-                if (isLatest || isLatestForYear)
+                tags = new List<string>(3);
+                if (isLatest)
                 {
-                    tags = new List<string>(3);
-                    if (isLatest)
-                    {
-                        tags.Add("latest");
-                    }
-                    if (isLatestForYear)
-                    {
-                        tags.Add(separatedTeamcityVersion[0]);
-                    }
-                    tags.Add(teamcityVersion);
+                    tags.Add("latest");
                 }
-                
-                yield return new DockerfileInfo(path, dockerfileContent, tags);
+                if (isLatestForYear)
+                {
+                    tags.Add(separatedTeamcityVersion[0]);
+                }
+                tags.Add(teamcityVersion);
             }
+                
+            yield return new DockerfileInfo(path, dockerfileContent, tags);
         }
     }
 }

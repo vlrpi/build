@@ -2,13 +2,13 @@ using System.Collections.Generic;
 using System.IO;
 
 // ReSharper disable once CheckNamespace
-namespace Generator
+namespace Generator;
+
+public sealed class Jdk11Generator : IGenerator
 {
-    public sealed class Jdk11Generator : IGenerator
+    private static string GetDockerfileTemplate()
     {
-        private static string GetDockerfileTemplate()
-        {
-            return @"
+        return @"
 
 ARG BALENALIB_ARCH
 
@@ -29,15 +29,14 @@ RUN apt-get update && \
     apt-get install -y default-jdk
 
 ".Trim();
-        }
+    }
 
-        public IEnumerable<DockerfileInfo> GetDockerfiles(string osName, string osVersion)
-        {
-            string dockerfileContent = GetDockerfileTemplate()
-                .Replace("{OS_NAME}", osName)
-                .Replace("{OS_VERSION}", osVersion);
-            string path = Path.Combine("..", "rpi-jdk11", osName, osVersion);
-            yield return new DockerfileInfo(path, dockerfileContent, null);
-        }
+    public IEnumerable<DockerfileInfo> GetDockerfiles(string osName, string osVersion)
+    {
+        string dockerfileContent = GetDockerfileTemplate()
+            .Replace("{OS_NAME}", osName)
+            .Replace("{OS_VERSION}", osVersion);
+        string path = Path.Combine("..", "rpi-jdk11", osName, osVersion);
+        yield return new DockerfileInfo(path, dockerfileContent, null);
     }
 }
