@@ -44,16 +44,20 @@ partial class Build
                         .EnablePull()
                         .EnablePush());
                 });
-                
-                foreach (string tag in tags)
+
+                if (!SkipManifests)
                 {
-                    string tagWithImage = tag.WithImage("teamcity-agent");
-                    RetryPolicy.Execute(() =>
+                    foreach (string tag in tags)
                     {
-                        Docker($"manifest create {tagWithImage} --amend {tag.WithImage("teamcity-agent-arm64v8")} --amend {tag.WithImage("teamcity-agent-arm32v7")}");
-                        DockerManifestPush(_ => _
-                            .SetManifestList(tagWithImage));
-                    });
+                        string tagWithImage = tag.WithImage("teamcity-agent");
+                        RetryPolicy.Execute(() =>
+                        {
+                            Docker(
+                                $"manifest create {tagWithImage} --amend {tag.WithImage("teamcity-agent-arm64v8")} --amend {tag.WithImage("teamcity-agent-arm32v7")}");
+                            DockerManifestPush(_ => _
+                                .SetManifestList(tagWithImage));
+                        });
+                    }
                 }
             }
         });

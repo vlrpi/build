@@ -47,6 +47,9 @@ partial class Build : NukeBuild
     [Parameter("A pattern to process only specific operating systems")]
     readonly string[] MatchPatterns = {"**/Dockerfile"};
 
+	[Parameter("Whether to skip manifest publishing")]
+	readonly bool SkipManifests = false;
+
     Target DockerLogIn => _ => _
         .Executes(() =>
         {

@@ -49,6 +49,14 @@ project {
             value = "**/Dockerfile",
             allowEmpty = true,
             display = ParameterDisplay.NORMAL)
+        checkbox (
+            "env.SkipManifests",
+            label = "SkipManifests",
+            description = "Whether to skip manifest publishing",
+            value = "False",
+            checked = "True",
+            unchecked = "False",
+            display = ParameterDisplay.NORMAL)
         select (
             "env.Verbosity",
             label = "Verbosity",

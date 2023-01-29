@@ -45,15 +45,19 @@ partial class Build
                         .EnablePush());
                 });
 
-                foreach (string tag in tags)
+                if (!SkipManifests)
                 {
-                    string tagWithImage = tag.WithImage("jdk");
-                    RetryPolicy.Execute(() =>
+                    foreach (string tag in tags)
                     {
-                        Docker($"manifest create {tagWithImage} --amend {tag.WithImage("jdk-arm64v8")} --amend {tag.WithImage("jdk-arm32v7")}");
-                        DockerManifestPush(_ => _
-                            .SetManifestList(tagWithImage));
-                    });
+                        string tagWithImage = tag.WithImage("jdk");
+                        RetryPolicy.Execute(() =>
+                        {
+                            Docker(
+                                $"manifest create {tagWithImage} --amend {tag.WithImage("jdk-arm64v8")} --amend {tag.WithImage("jdk-arm32v7")}");
+                            DockerManifestPush(_ => _
+                                .SetManifestList(tagWithImage));
+                        });
+                    }
                 }
             }
         });

@@ -46,16 +46,20 @@ partial class Build
                         .EnablePull()
                         .EnablePush());
                 });
-                
-                foreach (string tag in tags)
+
+                if (!SkipManifests)
                 {
-                    string tagWithImage = tag.WithImage("teamcity-agent-dotnet");
-                    RetryPolicy.Execute(() =>
+                    foreach (string tag in tags)
                     {
-                        Docker($"manifest create {tagWithImage} --amend {tag.WithImage($"teamcity-agent-dotnet-{baseArch}")}");
-                        DockerManifestPush(_ => _
-                            .SetManifestList(tagWithImage));
-                    });
+                        string tagWithImage = tag.WithImage("teamcity-agent-dotnet");
+                        RetryPolicy.Execute(() =>
+                        {
+                            Docker(
+                                $"manifest create {tagWithImage} --amend {tag.WithImage($"teamcity-agent-dotnet-{baseArch}")}");
+                            DockerManifestPush(_ => _
+                                .SetManifestList(tagWithImage));
+                        });
+                    }
                 }
             }
         });
