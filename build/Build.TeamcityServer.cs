@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Nuke.Common;
 using Nuke.Common.IO;
 using Nuke.Common.Tools.Docker;
@@ -12,56 +14,75 @@ partial class Build
 
     Target CompileAndPushTeamcityServer => _ => _
         .DependsOn(DownloadTeamcityBinaries)
-        .Executes(() =>
+        .Executes(async () =>
         {
             var dockerfiles = TeamcityServerPath.GlobFiles(MatchPatterns)
                 .Where(f => !((string)f).Contains("cache"))
                 .ToList();
             var tagsToBuild = GetTagsToBuild(dockerfiles, TeamcityServerPath, TeamcityServerModuleName);
+            
+            var tasks = new List<Task>();
+            
             foreach (var (tags, dockerfile) in tagsToBuild)
             {
-                RetryPolicy.Execute(() =>
+                Task t1 = Task.Factory.StartNew(() =>
                 {
-                    DockerBuildxBuild(_ => _
-                        .SetPlatform("linux/arm64")
-                        .SetTag(tags.Select(t => t.WithImage("teamcity-server-arm64v8")))
-                        .AddBuildArg("BASE_ARCH=arm64v8")
-                        .EnableRm()
-                        .SetPath(TeamcityServerPath)
-                        .SetFile(dockerfile)
-                        .SetBuilder("rpi")
-                        .EnablePull()
-                        .EnablePush());
-                });
-                
-                RetryPolicy.Execute(() =>
+                    RetryPolicy.Execute(() =>
+                    {
+                        DockerBuildxBuild(_ => _
+                            .SetPlatform("linux/arm64")
+                            .SetTag(tags.Select(t => t.WithImage("teamcity-server-arm64v8")))
+                            .AddBuildArg("BASE_ARCH=arm64v8")
+                            .EnableRm()
+                            .SetPath(TeamcityServerPath)
+                            .SetFile(dockerfile)
+                            .SetBuilder("rpi")
+                            .EnablePull()
+                            .EnablePush());
+                    });
+                }, TaskCreationOptions.LongRunning);
+
+                Task t2 = Task.Factory.StartNew(() =>
                 {
-                    DockerBuildxBuild(_ => _
-                        .SetPlatform("linux/arm/v7")
-                        .SetTag(tags.Select(t => t.WithImage("teamcity-server-arm32v7")))
-                        .AddBuildArg("BASE_ARCH=arm32v7")
-                        .EnableRm()
-                        .SetPath(TeamcityServerPath)
-                        .SetFile(dockerfile)
-                        .SetBuilder("rpi")
-                        .EnablePull()
-                        .EnablePush());
-                });
+                    RetryPolicy.Execute(() =>
+                    {
+                        DockerBuildxBuild(_ => _
+                            .SetPlatform("linux/arm/v7")
+                            .SetTag(tags.Select(t => t.WithImage("teamcity-server-arm32v7")))
+                            .AddBuildArg("BASE_ARCH=arm32v7")
+                            .EnableRm()
+                            .SetPath(TeamcityServerPath)
+                            .SetFile(dockerfile)
+                            .SetBuilder("rpi")
+                            .EnablePull()
+                            .EnablePush());
+                    });
+                }, TaskCreationOptions.LongRunning);
+
+                var tAll = Task.WhenAll(t1, t2);
 
                 if (!SkipManifests)
                 {
-                    foreach (string tag in tags)
+                    Task tManifest = tAll.ContinueWith(_ =>
                     {
-                        string tagWithImage = tag.WithImage("teamcity-server");
-                        RetryPolicy.Execute(() =>
+                        foreach (string tag in tags)
                         {
-                            Docker(
-                                $"manifest create {tagWithImage} --amend {tag.WithImage("teamcity-server-arm64v8")} --amend {tag.WithImage("teamcity-server-arm32v7")}");
-                            DockerManifestPush(_ => _
-                                .SetManifestList(tagWithImage));
-                        });
-                    }
+                            string tagWithImage = tag.WithImage("teamcity-server");
+                            RetryPolicy.Execute(() =>
+                            {
+                                Docker($"buildx imagetools create --builder rpi -t {tagWithImage} {tag.WithImage("teamcity-server-arm64v8")} {tag.WithImage("teamcity-server-arm32v7")}");
+                            });
+                        }
+                    }, TaskContinuationOptions.LongRunning);
+                    
+                    tasks.Add(tManifest);
+                }
+                else
+                {
+                    tasks.Add(tAll);
                 }
             }
+
+            await Task.WhenAll(tasks);
         });
 }

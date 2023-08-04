@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Nuke.Common;
 using Nuke.Common.IO;
 using Nuke.Common.Tools.Docker;
@@ -11,54 +13,73 @@ partial class Build
     AbsolutePath Jdk11Path => RootDirectory / Jdk11ModuleName;
 
     Target CompileAndPushJdk11 => _ => _
-        .Executes(() =>
+        .Executes(async () =>
         {
             var dockerfiles = Jdk11Path.GlobFiles(MatchPatterns);
             var tagsToBuild = GetTagsToBuild(dockerfiles, Jdk11Path, Jdk11ModuleName);
+
+            var tasks = new List<Task>();
+            
             foreach (var (tags, dockerfile) in tagsToBuild)
             {
-                RetryPolicy.Execute(() =>
+                Task t1 = Task.Factory.StartNew(() =>
                 {
-                    DockerBuildxBuild(_ => _
-                        .SetPlatform("linux/arm64")
-                        .SetTag(tags.Select(t => t.WithImage("jdk-arm64v8")))
-                        .AddBuildArg("BALENALIB_ARCH=aarch64")
-                        .AddBuildArg("JAVA_ARCH=arm64")
-                        .EnableRm()
-                        .SetPath(dockerfile.Parent)
-                        .SetBuilder("rpi")
-                        .EnablePull()
-                        .EnablePush());
-                });
+                    RetryPolicy.Execute(() =>
+                    {
+                        DockerBuildxBuild(_ => _
+                            .SetPlatform("linux/arm64")
+                            .SetTag(tags.Select(t => t.WithImage("jdk-arm64v8")))
+                            .AddBuildArg("BALENALIB_ARCH=aarch64")
+                            .AddBuildArg("JAVA_ARCH=arm64")
+                            .EnableRm()
+                            .SetPath(dockerfile.Parent)
+                            .SetBuilder("rpi")
+                            .EnablePull()
+                            .EnablePush());
+                    });
+                }, TaskCreationOptions.LongRunning);
 
-                RetryPolicy.Execute(() =>
+                Task t2 = Task.Factory.StartNew(() =>
                 {
-                    DockerBuildxBuild(_ => _
-                        .SetPlatform("linux/arm/v7")
-                        .SetTag(tags.Select(t => t.WithImage("jdk-arm32v7")))
-                        .AddBuildArg("BALENALIB_ARCH=armv7hf")
-                        .AddBuildArg("JAVA_ARCH=armhf")
-                        .EnableRm()
-                        .SetPath(dockerfile.Parent)
-                        .SetBuilder("rpi")
-                        .EnablePull()
-                        .EnablePush());
-                });
+                    RetryPolicy.Execute(() =>
+                    {
+                        DockerBuildxBuild(_ => _
+                            .SetPlatform("linux/arm/v7")
+                            .SetTag(tags.Select(t => t.WithImage("jdk-arm32v7")))
+                            .AddBuildArg("BALENALIB_ARCH=armv7hf")
+                            .AddBuildArg("JAVA_ARCH=armhf")
+                            .EnableRm()
+                            .SetPath(dockerfile.Parent)
+                            .SetBuilder("rpi")
+                            .EnablePull()
+                            .EnablePush());
+                    });
+                }, TaskCreationOptions.LongRunning);
+
+                Task tAll = Task.WhenAll(t1, t2);
 
                 if (!SkipManifests)
                 {
-                    foreach (string tag in tags)
+                    Task tManifest = tAll.ContinueWith(_ =>
                     {
-                        string tagWithImage = tag.WithImage("jdk");
-                        RetryPolicy.Execute(() =>
+                        foreach (string tag in tags)
                         {
-                            Docker(
-                                $"manifest create {tagWithImage} --amend {tag.WithImage("jdk-arm64v8")} --amend {tag.WithImage("jdk-arm32v7")}");
-                            DockerManifestPush(_ => _
-                                .SetManifestList(tagWithImage));
-                        });
-                    }
+                            string tagWithImage = tag.WithImage("jdk");
+                            RetryPolicy.Execute(() =>
+                            {
+                                Docker($"buildx imagetools create --builder rpi -t {tagWithImage} {tag.WithImage("jdk-arm64v8")} {tag.WithImage("jdk-arm32v7")}");
+                            });
+                        }
+                    }, TaskContinuationOptions.LongRunning);
+                    
+                    tasks.Add(tManifest);
+                }
+                else
+                {
+                    tasks.Add(tAll);
                 }
             }
+
+            await Task.WhenAll(tasks);
         });
 }

@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Nuke.Common;
 using Nuke.Common.IO;
 using Nuke.Common.Tools.Docker;
@@ -11,54 +13,73 @@ partial class Build
     AbsolutePath TeamcityAgentPath => RootDirectory / TeamcityAgentModuleName;
 
     Target CompileAndPushTeamcityAgent => _ => _
-        .Executes(() =>
+        .Executes(async () =>
         {
             var dockerfiles = TeamcityAgentPath.GlobFiles(MatchPatterns);
             var tagsToBuild = GetTagsToBuild(dockerfiles, TeamcityAgentPath, TeamcityAgentModuleName);
-            foreach (var (tags, dockerfile) in tagsToBuild)
+            
+            var tasks = new List<Task>();
+            
+            foreach (var (tags, dockerfile) in tagsToBuild.AsParallel())
             {
-                RetryPolicy.Execute(() =>
+                Task t1 = Task.Factory.StartNew(() =>
                 {
-                    DockerBuildxBuild(_ => _
-                        .SetPlatform("linux/arm64")
-                        .SetTag(tags.Select(t => t.WithImage("teamcity-agent-arm64v8")))
-                        .AddBuildArg("BASE_ARCH=arm64v8")
-                        .AddBuildArg("DOCKER_ARCH=aarch64")
-                        .EnableRm()
-                        .SetPath(dockerfile.Parent)
-                        .SetBuilder("rpi")
-                        .EnablePull()
-                        .EnablePush());
-                });
+                    RetryPolicy.Execute(() =>
+                    {
+                        DockerBuildxBuild(_ => _
+                            .SetPlatform("linux/arm64")
+                            .SetTag(tags.Select(t => t.WithImage("teamcity-agent-arm64v8")))
+                            .AddBuildArg("BASE_ARCH=arm64v8")
+                            .AddBuildArg("DOCKER_ARCH=aarch64")
+                            .EnableRm()
+                            .SetPath(dockerfile.Parent)
+                            .SetBuilder("rpi")
+                            .EnablePull()
+                            .EnablePush());
+                    });
+                }, TaskCreationOptions.LongRunning);
+
+                Task t2 = Task.Factory.StartNew(() =>
+                {
+                    RetryPolicy.Execute(() =>
+                    {
+                        DockerBuildxBuild(_ => _
+                            .SetPlatform("linux/arm/v7")
+                            .SetTag(tags.Select(t => t.WithImage("teamcity-agent-arm32v7")))
+                            .AddBuildArg("BASE_ARCH=arm32v7")
+                            .AddBuildArg("DOCKER_ARCH=armv7")
+                            .EnableRm()
+                            .SetPath(dockerfile.Parent)
+                            .SetBuilder("rpi")
+                            .EnablePull()
+                            .EnablePush());
+                    });
+                }, TaskCreationOptions.LongRunning);
                 
-                RetryPolicy.Execute(() =>
-                {
-                    DockerBuildxBuild(_ => _
-                        .SetPlatform("linux/arm/v7")
-                        .SetTag(tags.Select(t => t.WithImage("teamcity-agent-arm32v7")))
-                        .AddBuildArg("BASE_ARCH=arm32v7")
-                        .AddBuildArg("DOCKER_ARCH=armv7")
-                        .EnableRm()
-                        .SetPath(dockerfile.Parent)
-                        .SetBuilder("rpi")
-                        .EnablePull()
-                        .EnablePush());
-                });
+                var tAll = Task.WhenAll(t1, t2);
 
                 if (!SkipManifests)
                 {
-                    foreach (string tag in tags)
+                    Task tManifest = tAll.ContinueWith(_ =>
                     {
-                        string tagWithImage = tag.WithImage("teamcity-agent");
-                        RetryPolicy.Execute(() =>
+                        foreach (string tag in tags)
                         {
-                            Docker(
-                                $"manifest create {tagWithImage} --amend {tag.WithImage("teamcity-agent-arm64v8")} --amend {tag.WithImage("teamcity-agent-arm32v7")}");
-                            DockerManifestPush(_ => _
-                                .SetManifestList(tagWithImage));
-                        });
-                    }
+                            string tagWithImage = tag.WithImage("teamcity-agent");
+                            RetryPolicy.Execute(() =>
+                            {
+                                Docker($"buildx imagetools create --builder rpi -t {tagWithImage} {tag.WithImage("teamcity-agent-arm64v8")} {tag.WithImage("teamcity-agent-arm32v7")}");
+                            });
+                        }
+                    }, TaskContinuationOptions.LongRunning);
+                    
+                    tasks.Add(tManifest);
+                }
+                else
+                {
+                    tasks.Add(tAll);
                 }
             }
+            
+            await Task.WhenAll(tasks);
         });
 }
