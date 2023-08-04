@@ -24,19 +24,18 @@ ADD buildAgent.properties TeamCity/buildAgent/conf/
 
 RUN [ ""cross-build-start"" ]
 
-RUN apt-get install -y git curl zlib1g apt-transport-https gnupg-agent software-properties-common {CUSTOM_PACKAGES}
-RUN apt-get upgrade -y
+RUN apt-get install -y ca-certificates curl gnupg git zlib1g apt-transport-https software-properties-common {CUSTOM_PACKAGES}
 
-RUN curl -fsSL https://download.docker.com/linux/{OS_NAME}/gpg | sudo apt-key add -
+RUN install -m 0755 -d /etc/apt/keyrings
+RUN curl -fsSL https://download.docker.com/linux/{OS_NAME}/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+RUN chmod a+r /etc/apt/keyrings/docker.gpg
 
-RUN add-apt-repository \
-    ""deb [arch=${DOCKER_ARCH}] https://download.docker.com/linux/{OS_NAME} {OS_VERSION} stable""
+RUN echo ""deb [arch=${DOCKER_ARCH} signed-by=/etc/apt/keyrings/docker.gpg] \
+    https://download.docker.com/linux/{OS_NAME} {OS_VERSION} stable"" | \
+    tee /etc/apt/sources.list.d/docker.list > /dev/null
 
 RUN apt-get update
-RUN apt-get install -y docker-ce docker-ce-cli containerd.io
-
-RUN curl -L ""https://github.com/docker/compose/releases/download/{DOCKER_COMPOSE_VERSION}/docker-compose-linux-${DOCKER_ARCH}"" -o /usr/bin/docker-compose
-RUN chmod +x /usr/bin/docker-compose
+RUN apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
 RUN [ ""cross-build-end"" ]
 
