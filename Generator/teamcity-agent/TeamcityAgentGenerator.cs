@@ -24,7 +24,7 @@ ADD buildAgent.properties TeamCity/buildAgent/conf/
 
 RUN [ ""cross-build-start"" ]
 
-RUN apt-get install -y git curl zlib1g liblttng-ust0 apt-transport-https gnupg-agent software-properties-common
+RUN apt-get install -y git curl zlib1g apt-transport-https gnupg-agent software-properties-common {CUSTOM_PACKAGES}
 RUN apt-get upgrade -y
 
 RUN curl -fsSL https://download.docker.com/linux/{OS_NAME}/gpg | sudo apt-key add -
@@ -69,7 +69,8 @@ ENTRYPOINT [""TeamCity/buildAgent/bin/agent.sh"",""run""]
                 .Replace("{DOCKER_COMPOSE_VERSION}", dockerComposeVersion)
                 .Replace("{OS_NAME}", osName)
                 .Replace("{OS_VERSION}", osVersion)
-                .Replace("{TEAMCITY_VERSION}", teamcityVersion);
+                .Replace("{TEAMCITY_VERSION}", teamcityVersion)
+                .Replace("{CUSTOM_PACKAGES}", osVersion is "bookworm" or "jammy" ? "liblttng-ust1" : "liblttng-ust0");
             string path = Path.Combine("..", "rpi-teamcity-agent", osName, osVersion, teamcityVersion);
                 
             bool isLatest = teamcityVersion == teamcityVersions[^1];
