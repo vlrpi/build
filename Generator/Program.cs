@@ -25,10 +25,10 @@ IGenerator[] generators =
 {
     ("debian", "bullseye"),
     ("debian", "buster"),
-    ("debian", "stretch"),
+    ("debian", "bookworm"),
     ("ubuntu", "bionic"),
     ("ubuntu", "focal"),
-    ("ubuntu", "xenial")
+    ("ubuntu", "jammy")
 };
 
 foreach (IGenerator generator in generators)

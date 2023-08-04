@@ -26,6 +26,8 @@ ENV DOTNET_RUNNING_IN_CONTAINER=true \
 # Skip extraction of XML docs - generally not useful within an image/container - helps performance
     NUGET_XMLDOC_MODE=skip
 
+RUN [ ""cross-build-start"" ]
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates libc6 libgcc1 libgssapi-krb5-2 libstdc++6 zlib1g \
     {CUSTOM_PACKAGES} \
@@ -35,6 +37,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet \
     # Trigger first run experience by running arbitrary cmd
     && dotnet help
+
+RUN [ ""cross-build-end"" ]
 
 ".Trim();
     }
@@ -75,10 +79,10 @@ RUN curl -SL --output dotnet.tar.gz https://dotnetcli.blob.core.windows.net/dotn
             {
                 ("debian", "buster") => "libicu63 libssl1.1",
                 ("debian", "bullseye") => "libicu67 libssl1.1",
-                ("debian", "stretch") => "libicu57 libssl1.1",
+                ("debian", "bookworm") => "libicu72 libssl3",
                 ("ubuntu", "bionic") => "libicu60 libssl1.1",
                 ("ubuntu", "focal") => "libicu66 libssl1.1",
-                ("ubuntu", "xenial") => "libicu55 libssl1.0.0",
+                ("ubuntu", "jammy") => "libicu70 libssl3",
                 _ => throw new NotSupportedException($"{osName} {osVersion} is not supported")
             };
 
